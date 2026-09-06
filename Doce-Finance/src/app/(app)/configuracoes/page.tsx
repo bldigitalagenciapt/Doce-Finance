@@ -1,0 +1,346 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Store, Coins, Lock, Check, CreditCard } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { useSupabase } from '@/hooks/useSupabase'
+import { useAppStore } from '@/store/useAppStore'
+import { Input, Select, Textarea } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
+import { PageSpinner } from '@/components/ui/Spinner'
+import { cn } from '@/lib/utils'
+import type { Currency, PixKeyType, Profile } from '@/types/database'
+
+export default function ConfiguracoesPage() {
+  const supabase = useSupabase()
+  const profile = useAppStore((s) => s.profile)
+  const setProfile = useAppStore((s) => s.setProfile)
+  const currency = useAppStore((s) => s.currency)
+  const setCurrency = useAppStore((s) => s.setCurrency)
+
+  const [loading, setLoading] = useState(!profile)
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [savingCurrency, setSavingCurrency] = useState(false)
+  const [savingPassword, setSavingPassword] = useState(false)
+
+  const [savingPayment, setSavingPayment] = useState(false)
+
+  const [form, setForm] = useState({ business_name: '', full_name: '' })
+  const [payment, setPayment] = useState({
+    pix_key: '',
+    pix_key_type: '' as PixKeyType | '',
+    mbway_phone: '',
+    payment_instructions: '',
+  })
+  const [password, setPassword] = useState({ next: '', confirm: '' })
+
+  useEffect(() => {
+    async function load() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return setLoading(false)
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      if (data) {
+        const p = data as Profile
+        setProfile(p)
+        setForm({
+          business_name: p.business_name || '',
+          full_name: p.full_name || '',
+        })
+        setPayment({
+          pix_key: p.pix_key || '',
+          pix_key_type: p.pix_key_type || '',
+          mbway_phone: p.mbway_phone || '',
+          payment_instructions: p.payment_instructions || '',
+        })
+      }
+      setLoading(false)
+    }
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        business_name: profile.business_name || '',
+        full_name: profile.full_name || '',
+      })
+      setPayment({
+        pix_key: profile.pix_key || '',
+        pix_key_type: profile.pix_key_type || '',
+        mbway_phone: profile.mbway_phone || '',
+        payment_instructions: profile.payment_instructions || '',
+      })
+    }
+  }, [profile])
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      setSavingProfile(false)
+      return toast.error('Sessão expirada.')
+    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        business_name: form.business_name || null,
+        full_name: form.full_name || null,
+      })
+      .eq('id', user.id)
+      .select('*')
+      .single()
+    setSavingProfile(false)
+    if (error) return toast.error('Erro ao salvar perfil.')
+    if (data) setProfile(data as Profile)
+    toast.success('Perfil atualizado!')
+  }
+
+  const handleSavePayment = async () => {
+    setSavingPayment(true)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      setSavingPayment(false)
+      return toast.error('Sessão expirada.')
+    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        pix_key: payment.pix_key || null,
+        pix_key_type: payment.pix_key_type || null,
+        mbway_phone: payment.mbway_phone || null,
+        payment_instructions: payment.payment_instructions || null,
+      })
+      .eq('id', user.id)
+      .select('*')
+      .single()
+    setSavingPayment(false)
+    if (error) return toast.error('Erro ao salvar formas de pagamento.')
+    if (data) setProfile(data as Profile)
+    toast.success('Formas de pagamento salvas!')
+  }
+
+  const handleChangeCurrency = async (c: Currency) => {
+    if (c === currency) return
+    setSavingCurrency(true)
+    setCurrency(c) // atualização otimista
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      setSavingCurrency(false)
+      return toast.error('Sessão expirada.')
+    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ currency: c })
+      .eq('id', user.id)
+      .select('*')
+      .single()
+    setSavingCurrency(false)
+    if (error) {
+      toast.error('Erro ao alterar moeda.')
+      return
+    }
+    if (data) setProfile(data as Profile)
+    toast.success(`Moeda alterada para ${c === 'BRL' ? 'Real (R$)' : 'Euro (€)'}!`)
+  }
+
+  const handleChangePassword = async () => {
+    if (password.next.length < 6)
+      return toast.error('A senha deve ter ao menos 6 caracteres.')
+    if (password.next !== password.confirm)
+      return toast.error('As senhas não coincidem.')
+    setSavingPassword(true)
+    const { error } = await supabase.auth.updateUser({ password: password.next })
+    setSavingPassword(false)
+    if (error) return toast.error(error.message || 'Erro ao alterar senha.')
+    setPassword({ next: '', confirm: '' })
+    toast.success('Senha alterada com sucesso!')
+  }
+
+  if (loading) return <PageSpinner />
+
+  const currencies: { value: Currency; label: string; symbol: string; hint: string }[] = [
+    { value: 'BRL', label: 'Real', symbol: 'R$', hint: 'Brasil · pt-BR' },
+    { value: 'EUR', label: 'Euro', symbol: '€', hint: 'Portugal · pt-PT' },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
+        <p className="text-sm text-gray-500">Ajuste os dados do seu atelier.</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Dados do atelier */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <Store className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">Dados do atelier</h2>
+          </div>
+          <div className="space-y-4">
+            <Input
+              label="Nome do atelier"
+              value={form.business_name}
+              onChange={(e) => setForm({ ...form, business_name: e.target.value })}
+            />
+            <Input
+              label="Nome da confeiteira"
+              value={form.full_name}
+              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+            />
+            <Button onClick={handleSaveProfile} loading={savingProfile}>
+              Salvar alterações
+            </Button>
+          </div>
+        </div>
+
+        {/* Moeda */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <Coins className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">Moeda</h2>
+          </div>
+          <p className="mb-4 text-sm text-gray-500">
+            Escolha a moeda usada em todos os cálculos e telas.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {currencies.map((c) => {
+              const active = currency === c.value
+              return (
+                <button
+                  key={c.value}
+                  onClick={() => handleChangeCurrency(c.value)}
+                  disabled={savingCurrency}
+                  className={cn(
+                    'relative flex flex-col items-start gap-1 rounded-xl border-2 p-4 text-left transition-colors',
+                    active
+                      ? 'border-brand-700 bg-brand-50'
+                      : 'border-gray-200 hover:border-brand-300',
+                  )}
+                >
+                  {active && (
+                    <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-700 text-white">
+                      <Check className="h-3 w-3" />
+                    </span>
+                  )}
+                  <span className="text-2xl font-bold text-brand-700">{c.symbol}</span>
+                  <span className="font-medium text-gray-900">{c.label}</span>
+                  <span className="text-xs text-gray-400">{c.hint}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Formas de pagamento */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card lg:col-span-2">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <CreditCard className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">Formas de pagamento</h2>
+          </div>
+          <p className="mb-4 text-sm text-gray-500">
+            Estes dados aparecem no orçamento público que você envia aos clientes. A chave Pix
+            gera automaticamente um QR Code para pagamento.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Select
+              label="Tipo de chave Pix"
+              value={payment.pix_key_type}
+              onChange={(e) =>
+                setPayment({ ...payment, pix_key_type: e.target.value as PixKeyType | '' })
+              }
+            >
+              <option value="">Selecione…</option>
+              <option value="cpf">CPF</option>
+              <option value="cnpj">CNPJ</option>
+              <option value="email">E-mail</option>
+              <option value="telefone">Telefone</option>
+              <option value="aleatoria">Chave aleatória</option>
+            </Select>
+            <Input
+              label="Chave Pix"
+              placeholder="Sua chave Pix"
+              value={payment.pix_key}
+              onChange={(e) => setPayment({ ...payment, pix_key: e.target.value })}
+            />
+            <div>
+              <Input
+                label="Telefone Mbway"
+                placeholder="+351 912 345 678"
+                value={payment.mbway_phone}
+                onChange={(e) => setPayment({ ...payment, mbway_phone: e.target.value })}
+              />
+              <p className="mt-1 text-xs text-gray-400">Para clientes portugueses (opcional)</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Textarea
+              label="Instruções de pagamento"
+              rows={3}
+              placeholder="Ex.: Sinal de 50% para confirmar o pedido. Restante na entrega."
+              value={payment.payment_instructions}
+              onChange={(e) =>
+                setPayment({ ...payment, payment_instructions: e.target.value })
+              }
+            />
+          </div>
+          <div className="mt-4">
+            <Button onClick={handleSavePayment} loading={savingPayment}>
+              Salvar pagamento
+            </Button>
+          </div>
+        </div>
+
+        {/* Senha */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card lg:col-span-2">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <Lock className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">Trocar senha</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Nova senha"
+              type="password"
+              placeholder="••••••••"
+              value={password.next}
+              onChange={(e) => setPassword({ ...password, next: e.target.value })}
+            />
+            <Input
+              label="Confirmar nova senha"
+              type="password"
+              placeholder="••••••••"
+              value={password.confirm}
+              onChange={(e) => setPassword({ ...password, confirm: e.target.value })}
+            />
+          </div>
+          <div className="mt-4">
+            <Button onClick={handleChangePassword} loading={savingPassword}>
+              Alterar senha
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
