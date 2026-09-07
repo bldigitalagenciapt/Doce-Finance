@@ -12,7 +12,8 @@ import {
   FileText,
   Calendar,
   Settings,
-import { ChefHat } from 'lucide-react'
+  ChefHat,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/useAppStore'
 
