@@ -24,7 +24,8 @@ export function hexToHslValues(hex: string): { h: number; s: number; l: number }
 
   const max = Math.max(r, g, b)
   const min = Math.min(r, g, b)
-  let h = 0, s = 0, l = (max + min) / 2
+  let h = 0, s = 0
+  const l = (max + min) / 2
 
   if (max !== min) {
     const d = max - min
