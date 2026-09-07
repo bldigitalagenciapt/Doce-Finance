@@ -141,7 +141,7 @@ export default function IngredientesPage() {
               <TH>Categoria</TH>
               <TH>Embalagem</TH>
               <TH>Custo embalagem</TH>
-              <TH>Custo / 100g</TH>
+              <TH>Custo base</TH>
               <TH className="text-right">Ações</TH>
             </TR>
           </THead>
@@ -157,7 +157,9 @@ export default function IngredientesPage() {
                 </TD>
                 <TD>{format(i.cost_per_package)}</TD>
                 <TD className="font-semibold text-gray-900">
-                  {format(i.cost_per_unit * 100)} / 100{i.unit}
+                  {['g', 'ml'].includes(i.unit)
+                    ? `${format(i.cost_per_unit * 100)} / 100${i.unit}`
+                    : `${format(i.cost_per_unit)} / 1${i.unit}`}
                 </TD>
                 <TD>
                   <div className="flex items-center justify-end gap-1">
