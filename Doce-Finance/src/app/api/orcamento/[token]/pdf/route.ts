@@ -21,6 +21,23 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
 }
 
+function hexToRgbPdf(hex: string | null | undefined, fallback: ReturnType<typeof rgb>) {
+  if (!hex) return fallback
+  try {
+    const cleanHex = hex.replace('#', '')
+    if (cleanHex.length === 6) {
+      return rgb(
+        parseInt(cleanHex.substring(0, 2), 16) / 255,
+        parseInt(cleanHex.substring(2, 4), 16) / 255,
+        parseInt(cleanHex.substring(4, 6), 16) / 255
+      )
+    }
+  } catch (e) {
+    // fallback if parsing fails
+  }
+  return fallback
+}
+
 function formatCurrency(value: number, currency: Profile['currency']): string {
   const locale = currency === 'EUR' ? 'pt-PT' : 'pt-BR'
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value || 0)
@@ -95,6 +112,7 @@ export async function GET(
   const { order, client, profile, items } = data
   const currency = profile.currency
   const atelier = profile.business_name || 'Atelier'
+  const primaryColor = hexToRgbPdf(profile.brand_color, TERRACOTA)
 
   const createdAt = new Date(order.created_at)
   const validUntil = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000)
@@ -103,6 +121,42 @@ export async function GET(
   const pdf = await PDFDocument.create()
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold)
+
+  // ─── Fetch Logo (Opcional, com try/catch) ─────────────────
+  let logoImage: Awaited<ReturnType<typeof pdf.embedPng>> | null = null
+  let logoWidth = 0
+  let logoHeight = 0
+
+  if (profile.logo_url) {
+    try {
+      const res = await fetch(profile.logo_url)
+      if (res.ok) {
+        const buffer = await res.arrayBuffer()
+        const contentType = res.headers.get('content-type')
+        if (contentType?.includes('png')) {
+          logoImage = await pdf.embedPng(buffer)
+        } else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+          logoImage = await pdf.embedJpg(buffer)
+        }
+        
+        if (logoImage) {
+          const dims = logoImage.scale(1)
+          const maxH = 60
+          if (dims.height > maxH) {
+            const ratio = maxH / dims.height
+            logoWidth = dims.width * ratio
+            logoHeight = maxH
+          } else {
+            logoWidth = dims.width
+            logoHeight = dims.height
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch/embed logo in PDF:', error)
+      logoImage = null // fallback seguro
+    }
+  }
 
   const A4 = { w: 595.28, h: 841.89 }
   let page: PDFPage = pdf.addPage([A4.w, A4.h])
@@ -142,13 +196,21 @@ export async function GET(
     return t + '…'
   }
 
-  // ─── Cabeçalho (faixa terracota) ──────────────────────────
+  // ─── Cabeçalho (faixa colorida dinamicamente) ───────────
   const headerH = 110
-  page.drawRectangle({ x: 0, y: A4.h - headerH, width: A4.w, height: headerH, color: TERRACOTA })
-  drawText('ORÇAMENTO', MARGIN, A4.h - 40, { size: 9, font: fontBold, color: rgb(1, 1, 1) })
-  drawText(atelier, MARGIN, A4.h - 66, { size: 22, font: fontBold, color: rgb(1, 1, 1) })
+  page.drawRectangle({ x: 0, y: A4.h - headerH, width: A4.w, height: headerH, color: primaryColor })
+  
+  const headerTextX = logoImage ? MARGIN + logoWidth + 20 : MARGIN
+  
+  if (logoImage) {
+    const logoY = A4.h - headerH + (headerH - logoHeight) / 2
+    page.drawImage(logoImage, { x: MARGIN, y: logoY, width: logoWidth, height: logoHeight })
+  }
+
+  drawText('ORÇAMENTO', headerTextX, A4.h - 40, { size: 9, font: fontBold, color: rgb(1, 1, 1) })
+  drawText(atelier, headerTextX, A4.h - 66, { size: 22, font: fontBold, color: rgb(1, 1, 1) })
   if (profile.full_name) {
-    drawText(profile.full_name, MARGIN, A4.h - 84, { size: 10, color: rgb(1, 1, 1) })
+    drawText(profile.full_name, headerTextX, A4.h - 84, { size: 10, color: rgb(1, 1, 1) })
   }
   // Nº e status à direita
   const status = ORDER_STATUS[order.status]
@@ -172,7 +234,7 @@ export async function GET(
   const boxH = 96
   // Box Para
   page.drawRectangle({ x: MARGIN, y: y - boxH, width: boxW, height: boxH, color: CREAM, borderColor: LINE, borderWidth: 1 })
-  drawText('PARA', MARGIN + 14, y - 20, { size: 8, font: fontBold, color: TERRACOTA })
+  drawText('PARA', MARGIN + 14, y - 20, { size: 8, font: fontBold, color: primaryColor })
   drawText(truncate(client?.name || 'Cliente', 11, fontBold, boxW - 28), MARGIN + 14, y - 40, { size: 11, font: fontBold })
   let py = y - 56
   if (client?.phone) { drawText(truncate(client.phone, 9, font, boxW - 28), MARGIN + 14, py, { size: 9, color: GRAY_600 }); py -= 14 }
@@ -181,7 +243,7 @@ export async function GET(
   // Box Detalhes
   const bx = MARGIN + boxW + boxGap
   page.drawRectangle({ x: bx, y: y - boxH, width: boxW, height: boxH, color: CREAM, borderColor: LINE, borderWidth: 1 })
-  drawText('DETALHES', bx + 14, y - 20, { size: 8, font: fontBold, color: TERRACOTA })
+  drawText('DETALHES', bx + 14, y - 20, { size: 8, font: fontBold, color: primaryColor })
   drawText(`Emitido em: ${formatDate(order.created_at)}`, bx + 14, y - 40, { size: 9, color: GRAY_600 })
   drawText(`Válido até: ${formatDate(validUntil.toISOString())}`, bx + 14, y - 54, { size: 9, color: GRAY_600 })
   if (order.delivery_date) {
@@ -192,7 +254,7 @@ export async function GET(
   y -= boxH + 28
 
   // ─── Tabela de itens ──────────────────────────────────────
-  drawText('ITENS', MARGIN, y, { size: 8, font: fontBold, color: TERRACOTA })
+  drawText('ITENS', MARGIN, y, { size: 8, font: fontBold, color: primaryColor })
   y -= 18
 
   // Cabeçalho da tabela
@@ -237,10 +299,10 @@ export async function GET(
   const totLabelX = MARGIN + contentW - 200
   const totValRight = MARGIN + contentW - 10
   const totRow = (label: string, value: string, bold = false, color = GRAY_600) => {
-    drawText(label, totLabelX, y, { size: bold ? 12 : 10, font: bold ? fontBold : font, color: bold ? TERRACOTA : color })
+    drawText(label, totLabelX, y, { size: bold ? 12 : 10, font: bold ? fontBold : font, color: bold ? primaryColor : color })
     const f = bold ? fontBold : font
     const size = bold ? 12 : 10
-    drawText(value, totValRight - f.widthOfTextAtSize(value, size), y, { size, font: f, color: bold ? TERRACOTA : color })
+    drawText(value, totValRight - f.widthOfTextAtSize(value, size), y, { size, font: f, color: bold ? primaryColor : color })
     y -= bold ? 20 : 16
   }
   totRow('Subtotal', formatCurrency(order.subtotal, currency))
@@ -275,10 +337,10 @@ export async function GET(
   const hasMbway = !!profile.mbway_phone
   const hasPayment = qrImage || hasMbway || profile.payment_instructions
 
-  if (hasPayment) {
-    y -= 24
-    ensureSpace(qrImage ? 180 : 90)
-    drawText('COMO PAGAR', MARGIN, y, { size: 8, font: fontBold, color: TERRACOTA })
+    if (hasPayment) {
+      y -= 24
+      ensureSpace(qrImage ? 180 : 90)
+      drawText('COMO PAGAR', MARGIN, y, { size: 8, font: fontBold, color: primaryColor })
     y -= 18
 
     if (qrImage) {
@@ -341,7 +403,7 @@ export async function GET(
   if (order.notes) {
     y -= 16
     ensureSpace(50)
-    drawText('OBSERVAÇÕES', MARGIN, y, { size: 8, font: fontBold, color: TERRACOTA })
+    drawText('OBSERVAÇÕES', MARGIN, y, { size: 8, font: fontBold, color: primaryColor })
     y -= 16
     const words = safeText(order.notes).split(/\s+/)
     let line = ''
