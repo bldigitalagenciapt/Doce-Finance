@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 
+import { BrandProvider } from '@/components/layout/BrandProvider'
+
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
@@ -19,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <BrandProvider />
         {children}
         <Toaster
           position="top-right"

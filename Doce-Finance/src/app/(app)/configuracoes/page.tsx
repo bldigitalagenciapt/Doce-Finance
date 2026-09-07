@@ -25,7 +25,12 @@ export default function ConfiguracoesPage() {
 
   const [savingPayment, setSavingPayment] = useState(false)
 
-  const [form, setForm] = useState({ business_name: '', full_name: '' })
+  const [form, setForm] = useState({ 
+    business_name: '', 
+    full_name: '',
+    brand_color: '',
+    logo_url: '',
+  })
   const [payment, setPayment] = useState({
     pix_key: '',
     pix_key_type: '' as PixKeyType | '',
@@ -51,6 +56,8 @@ export default function ConfiguracoesPage() {
         setForm({
           business_name: p.business_name || '',
           full_name: p.full_name || '',
+          brand_color: p.brand_color || '',
+          logo_url: p.logo_url || '',
         })
         setPayment({
           pix_key: p.pix_key || '',
@@ -70,6 +77,8 @@ export default function ConfiguracoesPage() {
       setForm({
         business_name: profile.business_name || '',
         full_name: profile.full_name || '',
+        brand_color: profile.brand_color || '',
+        logo_url: profile.logo_url || '',
       })
       setPayment({
         pix_key: profile.pix_key || '',
@@ -94,6 +103,8 @@ export default function ConfiguracoesPage() {
       .update({
         business_name: form.business_name || null,
         full_name: form.full_name || null,
+        brand_color: form.brand_color || null,
+        logo_url: form.logo_url || null,
       })
       .eq('id', user.id)
       .select('*')
@@ -169,6 +180,34 @@ export default function ConfiguracoesPage() {
     toast.success('Senha alterada com sucesso!')
   }
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return
+      const file = e.target.files[0]
+      const fileExt = file.name.split('.').pop()
+      const filePath = `${profile?.id}-${Math.random()}.${fileExt}`
+
+      setSavingProfile(true)
+
+      const { error: uploadError } = await supabase.storage
+        .from('atelier-images')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: urlData } = supabase.storage
+        .from('atelier-images')
+        .getPublicUrl(filePath)
+
+      setForm((prev) => ({ ...prev, logo_url: urlData.publicUrl }))
+      toast.success('Logo enviada! Lembre-se de salvar as alterações.')
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao enviar imagem.')
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
   if (loading) return <PageSpinner />
 
   const currencies: { value: Currency; label: string; symbol: string; hint: string }[] = [
@@ -203,6 +242,64 @@ export default function ConfiguracoesPage() {
               value={form.full_name}
               onChange={(e) => setForm({ ...form, full_name: e.target.value })}
             />
+          </div>
+        </div>
+
+        {/* Identidade Visual */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <Store className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">Identidade Visual</h2>
+          </div>
+          <p className="mb-4 text-sm text-gray-500">
+            Personalize as cores e a logo do seu sistema.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Logo do Atelier
+              </label>
+              <div className="flex items-center gap-4">
+                {form.logo_url ? (
+                  <img src={form.logo_url} alt="Logo" className="h-12 w-12 rounded object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-gray-400">
+                    <Store className="h-6 w-6" />
+                  </div>
+                )}
+                <div>
+                  <label className="cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                    <span>Escolher imagem</span>
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      disabled={savingProfile}
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Cor da Marca
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={form.brand_color || '#c4673e'}
+                  onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
+                  className="h-10 w-20 cursor-pointer rounded border border-gray-300 p-1"
+                />
+                <span className="text-sm text-gray-500 uppercase">
+                  {form.brand_color || '#C4673E'}
+                </span>
+              </div>
+            </div>
             <Button onClick={handleSaveProfile} loading={savingProfile}>
               Salvar alterações
             </Button>

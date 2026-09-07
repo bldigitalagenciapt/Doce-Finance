@@ -12,9 +12,9 @@ import {
   FileText,
   Calendar,
   Settings,
-  ChefHat,
-} from 'lucide-react'
+import { ChefHat } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAppStore } from '@/store/useAppStore'
 
 const nav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,15 +30,26 @@ const nav = [
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
+  const profile = useAppStore((s) => s.profile)
 
   return (
     <div className="flex h-full flex-col bg-white">
       <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-700 text-white">
-          <ChefHat className="h-5 w-5" />
-        </div>
+        {profile?.logo_url ? (
+          <img
+            src={profile.logo_url}
+            alt="Logo"
+            className="h-9 w-9 rounded-lg object-cover shadow-sm"
+          />
+        ) : (
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-700 text-white">
+            <ChefHat className="h-5 w-5" />
+          </div>
+        )}
         <div>
-          <p className="text-sm font-bold leading-tight text-gray-900">Doce Finance</p>
+          <p className="text-sm font-bold leading-tight text-gray-900">
+            {profile?.business_name || 'Doce Finance'}
+          </p>
           <p className="text-xs text-gray-400">Gestão Inteligente</p>
         </div>
       </div>

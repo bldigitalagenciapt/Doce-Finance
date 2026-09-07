@@ -31,6 +31,8 @@ export interface Profile {
   pix_key_type: PixKeyType | null
   mbway_phone: string | null
   payment_instructions: string | null
+  brand_color: string | null
+  logo_url: string | null
   created_at: string
   updated_at: string
 }

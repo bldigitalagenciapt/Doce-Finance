@@ -5,6 +5,18 @@
 :root {
   --background: #f8f7f5;
   --foreground: #1a1a1a;
+  
+  /* Cores padrão da marca (Marrom) - formato HSL */
+  --color-brand-50: 20 67% 97%;
+  --color-brand-100: 20 65% 93%;
+  --color-brand-200: 18 64% 86%;
+  --color-brand-300: 16 63% 76%;
+  --color-brand-400: 17 59% 63%;
+  --color-brand-500: 18 53% 51%;
+  --color-brand-600: 18 57% 41%;
+  --color-brand-700: 18 40% 35%;
+  --color-brand-800: 18 41% 25%;
+  --color-brand-900: 15 42% 17%;
 }
 
 html {
