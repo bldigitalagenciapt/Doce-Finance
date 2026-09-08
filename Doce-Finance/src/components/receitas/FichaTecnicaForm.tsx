@@ -309,7 +309,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                   className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 shadow-sm"
                 >
                   <div className="mb-4 flex items-center justify-between">
-                    <div className="group relative flex flex-1 items-center">
+                    <label className="group relative flex flex-1 items-center">
                       <input
                         type="text"
                         value={block.name}
@@ -317,8 +317,8 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                         className="peer w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 pr-8 focus:border-b-2 focus:border-brand-500 focus:outline-none"
                         placeholder="Nome da etapa (ex: Massa, Recheio)"
                       />
-                      <Pencil className="absolute right-2 h-4 w-4 text-gray-400 transition-opacity peer-focus:opacity-0 pointer-events-none" />
-                    </div>
+                      <Pencil className="absolute right-2 h-4 w-4 text-gray-400 transition-opacity peer-focus:opacity-0 cursor-pointer" />
+                    </label>
                     <button
                       onClick={() => removeBlock(block.id)}
                       className="ml-4 shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
