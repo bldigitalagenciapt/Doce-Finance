@@ -6,6 +6,7 @@ import { Plus, Trash2, Search, Save, Pencil } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useCurrency } from '@/hooks/useCurrency'
+import { useAppStore } from '@/store/useAppStore'
 import { Input, Select, Textarea } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/Spinner'
@@ -179,6 +180,8 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
   const supabase = useSupabase()
   const router = useRouter()
   const { format, symbol } = useCurrency()
+  const profile = useAppStore((s) => s.profile)
+  const defaultMargin = profile?.default_margin_percent ?? 30
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -195,7 +198,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     description: '',
     yield_quantity: '1',
     yield_unit: 'un' as YieldUnit,
-    margin_percent: 30,
+    margin_percent: defaultMargin,
   })
   const [rows, setRows] = useState<RecipeItemRow[]>([])
   const [extras, setExtras] = useState<ExtraCost[]>([])

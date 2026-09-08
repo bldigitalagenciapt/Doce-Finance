@@ -27,12 +27,22 @@ export interface Profile {
   avatar_url: string | null
   business_name: string | null
   currency: Currency
+  // Contato
+  phone: string | null
+  email_contact: string | null
+  address: string | null
+  business_hours: string | null
+  // Pagamento
   pix_key: string | null
   pix_key_type: PixKeyType | null
   mbway_phone: string | null
   payment_instructions: string | null
+  // Identidade Visual
   brand_color: string | null
   logo_url: string | null
+  // Preferências
+  default_margin_percent: number | null
+  quote_validity_days: number | null
   created_at: string
   updated_at: string
 }

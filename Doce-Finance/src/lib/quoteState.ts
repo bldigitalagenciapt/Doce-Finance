@@ -15,10 +15,10 @@ export const QUOTE_STATE_LIST = Object.entries(QUOTE_STATE).map(
   ([value, meta]) => ({ value: value as QuoteState, ...meta }),
 )
 
-/** Padrão de validade quando não definida: created_at + 15 dias. */
-export function defaultValidUntil(createdAt: string | Date): Date {
+/** Padrão de validade quando não definida: created_at + N dias (padrão: 15). */
+export function defaultValidUntil(createdAt: string | Date, days = 15): Date {
   const base = new Date(createdAt)
-  return new Date(base.getTime() + 15 * 24 * 60 * 60 * 1000)
+  return new Date(base.getTime() + days * 24 * 60 * 60 * 1000)
 }
 
 /** Retorna só a parte de data (YYYY-MM-DD) de um Date, em UTC-safe local. */

@@ -16,6 +16,7 @@ import {
 import toast from 'react-hot-toast'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useCurrency } from '@/hooks/useCurrency'
+import { useAppStore } from '@/store/useAppStore'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
@@ -37,6 +38,8 @@ import type { Order, QuoteState } from '@/types/database'
 export default function OrcamentosPage() {
   const supabase = useSupabase()
   const { format } = useCurrency()
+  const profile = useAppStore((s) => s.profile)
+  const validityDays = profile?.quote_validity_days ?? 15
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<Order[]>([])
   const [sharing, setSharing] = useState<Order | null>(null)
@@ -64,7 +67,7 @@ export default function OrcamentosPage() {
     copyLink(url, { silent: true })
 
     let newState = o.quote_state || 'rascunho'
-    const newValidade = o.quote_valid_until || toDateInput(defaultValidUntil(o.created_at))
+    const newValidade = o.quote_valid_until || toDateInput(defaultValidUntil(o.created_at, validityDays))
 
     // Transição Automática de Status: Rascunho -> Aguardam resposta (enviado)
     if (newState === 'rascunho') {
@@ -151,7 +154,7 @@ export default function OrcamentosPage() {
     if (!sharing) return
     setSavingState(true)
     const payload: Record<string, unknown> = {
-      quote_valid_until: validade || toDateInput(defaultValidUntil(sharing.created_at)),
+      quote_valid_until: validade || toDateInput(defaultValidUntil(sharing.created_at, validityDays)),
     }
     const current = sharing.quote_state || 'rascunho'
     if (current === 'rascunho') {
