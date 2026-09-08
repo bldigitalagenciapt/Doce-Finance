@@ -120,7 +120,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     return ingredients.filter(
       (i) =>
         i.name.toLowerCase().includes(s) &&
-        !rows.some((r) => r.ingredient_id === i.id),
+        !rows.some((r) => r.ingredient_id === i.id && r.blockId === blockId),
     )
   }
 
@@ -366,7 +366,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                         const cost = ing ? qty * Number(ing.cost_per_unit) : 0
                         return (
                           <div
-                            key={r.ingredient_id}
+                            key={`${r.blockId}-${r.ingredient_id}`}
                             className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm"
                           >
                             <div className="flex-1">
