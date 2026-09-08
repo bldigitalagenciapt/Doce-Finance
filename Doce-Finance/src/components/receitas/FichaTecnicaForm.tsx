@@ -317,7 +317,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                         className="peer w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 pr-8 focus:border-b-2 focus:border-brand-500 focus:outline-none"
                         placeholder="Nome da etapa (ex: Massa, Recheio)"
                       />
-                      <Pencil className="absolute right-2 h-4 w-4 text-gray-300 opacity-50 transition-opacity group-hover:opacity-100 peer-focus:opacity-0 pointer-events-none" />
+                      <Pencil className="absolute right-2 h-4 w-4 text-gray-400 transition-opacity peer-focus:opacity-0 pointer-events-none" />
                     </div>
                     <button
                       onClick={() => removeBlock(block.id)}
