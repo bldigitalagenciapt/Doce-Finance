@@ -17,6 +17,7 @@ import {
   CalendarClock,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import * as XLSX from 'xlsx'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useAppStore } from '@/store/useAppStore'
 import { Input, Select, Textarea } from '@/components/ui/Input'
@@ -265,34 +266,71 @@ export default function ConfiguracoesPage() {
         supabase.from('orders').select('order_number, status, delivery_date, subtotal, discount, total, paid_amount').eq('user_id', user.id).order('order_number', { ascending: false }),
       ])
 
-      const toCSV = (rows: any[]) => {
-        if (!rows || rows.length === 0) return ''
-        const headers = Object.keys(rows[0]).join(';')
-        const lines = rows.map(r => Object.values(r).map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'))
-        return [headers, ...lines].join('\n')
+      const wb = XLSX.utils.book_new()
+
+      // Aba 1: Ingredientes
+      const ingRows = (ingRes.data || []).map((r: any) => ({
+        'Nome': r.name,
+        'Categoria': r.category,
+        'Unidade': r.unit,
+        'Qtd Comprada': r.quantity_purchased,
+        'Custo Embalagem (R$)': r.cost_per_package,
+        'Custo por Unidade (R$)': r.cost_per_unit,
+        'Estoque': r.stock_quantity,
+      }))
+      const wsIng = XLSX.utils.json_to_sheet(ingRows.length ? ingRows : [{}])
+      XLSX.utils.book_append_sheet(wb, wsIng, 'Ingredientes')
+
+      // Aba 2: Receitas
+      const recRows = (recRes.data || []).map((r: any) => ({
+        'Nome': r.name,
+        'Categoria': r.category,
+        'Rendimento': r.yield_quantity,
+        'Unidade': r.yield_unit,
+        'Custo Ingredientes': r.ingredients_cost,
+        'Custos Extras': r.extra_costs,
+        'Custo Total': r.total_cost,
+        'Preço Sugerido': r.suggested_price,
+        'Margem (%)': r.margin_percent,
+      }))
+      const wsRec = XLSX.utils.json_to_sheet(recRows.length ? recRows : [{}])
+      XLSX.utils.book_append_sheet(wb, wsRec, 'Receitas')
+
+      // Aba 3: Clientes (telefone forçado como texto)
+      const cliRows = (cliRes.data || []).map((r: any) => ({
+        'Nome': r.name,
+        'Telefone': r.phone ? String(r.phone) : '',
+        'E-mail': r.email,
+        'Endereço': r.address,
+        'Total Gasto': r.total_spent,
+        'Pedidos': r.orders_count,
+      }))
+      const wsCli = XLSX.utils.json_to_sheet(cliRows.length ? cliRows : [{}])
+      // Garante que coluna Telefone seja texto
+      if (cliRows.length) {
+        cliRows.forEach((_, i) => {
+          const cell = wsCli[XLSX.utils.encode_cell({ r: i + 1, c: 1 })]
+          if (cell) { cell.t = 's'; cell.z = '@' }
+        })
       }
+      XLSX.utils.book_append_sheet(wb, wsCli, 'Clientes')
 
-      const sections = [
-        '=== INGREDIENTES ===',
-        toCSV(ingRes.data || []),
-        '',
-        '=== RECEITAS ===',
-        toCSV(recRes.data || []),
-        '',
-        '=== CLIENTES ===',
-        toCSV(cliRes.data || []),
-        '',
-        '=== PEDIDOS ===',
-        toCSV(ordRes.data || []),
-      ].join('\n')
+      // Aba 4: Pedidos
+      const ordRows = (ordRes.data || []).map((r: any) => ({
+        'Nº Pedido': r.order_number,
+        'Status': r.status,
+        'Entrega': r.delivery_date ? r.delivery_date.toString().split('T')[0] : '',
+        'Subtotal': r.subtotal,
+        'Desconto': r.discount,
+        'Total': r.total,
+        'Valor Pago': r.paid_amount,
+      }))
+      const wsOrd = XLSX.utils.json_to_sheet(ordRows.length ? ordRows : [{}])
+      XLSX.utils.book_append_sheet(wb, wsOrd, 'Pedidos')
 
-      const blob = new Blob(['\uFEFF' + sections], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `doce-finance-backup-${new Date().toISOString().split('T')[0]}.csv`
-      a.click()
-      URL.revokeObjectURL(url)
+      // Gera e faz download do arquivo .xlsx
+      const date = new Date().toISOString().split('T')[0]
+      XLSX.writeFile(wb, `doce-finance-backup-${date}.xlsx`)
       toast.success('Dados exportados com sucesso!')
     } catch {
       toast.error('Erro ao exportar dados.')
@@ -586,7 +624,7 @@ export default function ConfiguracoesPage() {
           </p>
           <Button variant="outline" onClick={handleExportData} loading={exportingData}>
             <FileDown className="h-4 w-4" />
-            Exportar todos os dados (.csv)
+            Exportar todos os dados (.xlsx)
           </Button>
         </div>
 
