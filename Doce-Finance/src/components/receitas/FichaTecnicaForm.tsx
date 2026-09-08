@@ -18,6 +18,7 @@ interface RecipeItemRow {
   ingredient_id: string
   quantity: string
   categoria: string
+  blockId: string
 }
 interface ExtraCost {
   nome: string
@@ -33,7 +34,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
   const [saving, setSaving] = useState(false)
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   
-  const [blocks, setBlocks] = useState<{ id: string; name: string }[]>([
+  const [blocks, setBlocks] = useState<{ id: string; name: string }[]>(() => [
     { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' },
   ])
   const [searches, setSearches] = useState<Record<string, string>>({})
@@ -85,12 +86,23 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
           quantity: String(ri.quantity),
           categoria: ri.categoria || 'Nova Etapa',
         }))
-        setRows(initialRows)
 
         const uniqueCats = Array.from(new Set(initialRows.map((r: any) => r.categoria)))
-        if (uniqueCats.length > 0) {
-          setBlocks(uniqueCats.map(name => ({ id: Math.random().toString(36).slice(2), name: name as string })))
-        }
+        const catToBlockId: Record<string, string> = {}
+        const loadedBlocks = uniqueCats.length > 0 
+          ? uniqueCats.map(name => {
+              const id = Math.random().toString(36).slice(2)
+              catToBlockId[name as string] = id
+              return { id, name: name as string }
+            })
+          : [{ id: Math.random().toString(36).slice(2), name: 'Nova Etapa' }]
+        
+        setBlocks(loadedBlocks)
+
+        setRows(initialRows.map((r: any) => ({
+          ...r,
+          blockId: catToBlockId[r.categoria] || loadedBlocks[0].id
+        })))
       }
       setLoading(false)
     }
@@ -133,7 +145,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
   const profit = suggestedPrice - totalCost
 
   const addRow = (id: string, blockName: string, blockId: string) => {
-    setRows([...rows, { ingredient_id: id, quantity: '', categoria: blockName }])
+    setRows([...rows, { ingredient_id: id, quantity: '', categoria: blockName, blockId }])
     setSearches({ ...searches, [blockId]: '' })
   }
 
@@ -141,15 +153,15 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     setBlocks([...blocks, { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' }])
   }
 
-  const updateBlockName = (id: string, oldName: string, newName: string) => {
+  const updateBlockName = (id: string, newName: string) => {
     setBlocks(blocks.map((b) => (b.id === id ? { ...b, name: newName } : b)))
-    setRows(rows.map((r) => (r.categoria === oldName ? { ...r, categoria: newName } : r)))
+    setRows(rows.map((r) => (r.blockId === id ? { ...r, categoria: newName } : r)))
   }
 
-  const removeBlock = (id: string, blockName: string) => {
+  const removeBlock = (id: string) => {
     if (window.confirm('Tem certeza que deseja remover esta etapa e todos os seus ingredientes?')) {
       setBlocks(blocks.filter((b) => b.id !== id))
-      setRows(rows.filter((r) => r.categoria !== blockName))
+      setRows(rows.filter((r) => r.blockId !== id))
     }
   }
 
@@ -289,7 +301,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
               const avail = getAvailableIngredients(block.id)
               const blockRows = rows
                 .map((r, idx) => ({ ...r, originalIndex: idx }))
-                .filter((r) => r.categoria === block.name)
+                .filter((r) => r.blockId === block.id)
 
               return (
                 <div
@@ -300,12 +312,12 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                     <input
                       type="text"
                       value={block.name}
-                      onChange={(e) => updateBlockName(block.id, block.name, e.target.value)}
+                      onChange={(e) => updateBlockName(block.id, e.target.value)}
                       className="w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 focus:border-b-2 focus:border-brand-500 focus:outline-none"
                       placeholder="Nome da etapa (ex: Massa, Recheio)"
                     />
                     <button
-                      onClick={() => removeBlock(block.id, block.name)}
+                      onClick={() => removeBlock(block.id)}
                       className="ml-4 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
                       title="Remover Etapa"
                     >
