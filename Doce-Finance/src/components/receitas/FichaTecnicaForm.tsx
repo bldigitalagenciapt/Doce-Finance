@@ -13,7 +13,6 @@ import type { Ingredient, Recipe, YieldUnit } from '@/types/database'
 
 const CATEGORIES = ['Bolo', 'Torta', 'Doce', 'Salgado', 'Cupcake', 'Sobremesa', 'Outros']
 const YIELD_UNITS: YieldUnit[] = ['un', 'fatia', 'porção', 'g', 'kg', 'ml', 'L']
-const RECIPE_INGREDIENT_CATEGORIES = ['Geral', 'Massa', 'Recheio', 'Cobertura', 'Calda', 'Decoração']
 
 interface RecipeItemRow {
   ingredient_id: string
@@ -33,8 +32,11 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
-  const [search, setSearch] = useState('')
-  const [selectedCategoria, setSelectedCategoria] = useState('Geral')
+  
+  const [blocks, setBlocks] = useState<{ id: string; name: string }[]>([
+    { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' },
+  ])
+  const [searches, setSearches] = useState<Record<string, string>>({})
 
   const [form, setForm] = useState({
     name: '',
@@ -78,13 +80,17 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
               : [],
           )
         }
-        setRows(
-          (riRes.data || []).map((ri: any) => ({
-            ingredient_id: ri.ingredient_id,
-            quantity: String(ri.quantity),
-            categoria: ri.categoria || 'Geral',
-          })),
-        )
+        const initialRows = (riRes.data || []).map((ri: any) => ({
+          ingredient_id: ri.ingredient_id,
+          quantity: String(ri.quantity),
+          categoria: ri.categoria || 'Nova Etapa',
+        }))
+        setRows(initialRows)
+
+        const uniqueCats = Array.from(new Set(initialRows.map((r: any) => r.categoria)))
+        if (uniqueCats.length > 0) {
+          setBlocks(uniqueCats.map(name => ({ id: Math.random().toString(36).slice(2), name: name as string })))
+        }
       }
       setLoading(false)
     }
@@ -97,15 +103,14 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     [ingredients],
   )
 
-  const availableIngredients = useMemo(
-    () =>
-      ingredients.filter(
-        (i) =>
-          i.name.toLowerCase().includes(search.toLowerCase()) &&
-          !rows.some((r) => r.ingredient_id === i.id),
-      ),
-    [ingredients, search, rows],
-  )
+  const getAvailableIngredients = (blockId: string) => {
+    const s = (searches[blockId] || '').toLowerCase()
+    return ingredients.filter(
+      (i) =>
+        i.name.toLowerCase().includes(s) &&
+        !rows.some((r) => r.ingredient_id === i.id),
+    )
+  }
 
   const ingredientsCost = useMemo(
     () =>
@@ -127,9 +132,25 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     form.margin_percent < 100 ? totalCost / (1 - form.margin_percent / 100) : 0
   const profit = suggestedPrice - totalCost
 
-  const addRow = (id: string) => {
-    setRows([...rows, { ingredient_id: id, quantity: '', categoria: selectedCategoria }])
-    setSearch('')
+  const addRow = (id: string, blockName: string, blockId: string) => {
+    setRows([...rows, { ingredient_id: id, quantity: '', categoria: blockName }])
+    setSearches({ ...searches, [blockId]: '' })
+  }
+
+  const addBlock = () => {
+    setBlocks([...blocks, { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' }])
+  }
+
+  const updateBlockName = (id: string, oldName: string, newName: string) => {
+    setBlocks(blocks.map((b) => (b.id === id ? { ...b, name: newName } : b)))
+    setRows(rows.map((r) => (r.categoria === oldName ? { ...r, categoria: newName } : r)))
+  }
+
+  const removeBlock = (id: string, blockName: string) => {
+    if (window.confirm('Tem certeza que deseja remover esta etapa e todos os seus ingredientes?')) {
+      setBlocks(blocks.filter((b) => b.id !== id))
+      setRows(rows.filter((r) => r.categoria !== blockName))
+    }
   }
 
   const handleSave = async () => {
@@ -254,119 +275,132 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
 
         {/* Ingredientes */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">Ingredientes</h2>
-
-          <div className="flex gap-2 mb-4 relative">
-            <div className="w-40">
-              <Select
-                value={selectedCategoria}
-                onChange={(e) => setSelectedCategoria(e.target.value)}
-              >
-                {RECIPE_INGREDIENT_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                className="pl-9"
-                placeholder="Buscar ingrediente para adicionar..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              {search && availableIngredients.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                  {availableIngredients.slice(0, 8).map((i) => (
-                    <button
-                      key={i.id}
-                      onClick={() => addRow(i.id)}
-                      className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-brand-50"
-                    >
-                      <span>{i.name}</span>
-                      <span className="text-xs text-gray-400">
-                        {format(i.cost_per_unit)}/{i.unit}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900">Etapas do Preparo</h2>
+            <Button variant="outline" size="sm" onClick={addBlock}>
+              <Plus className="h-4 w-4" />
+              Nova Etapa
+            </Button>
           </div>
 
-          {rows.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-400">
-              Nenhum ingrediente adicionado.
-            </p>
-          ) : (
-            <div className="space-y-6">
-              {Object.entries(
-                rows.reduce((acc, row, idx) => {
-                  if (!acc[row.categoria]) acc[row.categoria] = []
-                  acc[row.categoria].push({ ...row, originalIndex: idx })
-                  return acc
-                }, {} as Record<string, (RecipeItemRow & { originalIndex: number })[]>)
-              ).map(([cat, items]) => (
-                <div key={cat}>
-                  <div className="mb-3 rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-700">
-                    {cat}
+          <div className="space-y-6">
+            {blocks.map((block) => {
+              const blockSearch = searches[block.id] || ''
+              const avail = getAvailableIngredients(block.id)
+              const blockRows = rows
+                .map((r, idx) => ({ ...r, originalIndex: idx }))
+                .filter((r) => r.categoria === block.name)
+
+              return (
+                <div
+                  key={block.id}
+                  className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 shadow-sm"
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <input
+                      type="text"
+                      value={block.name}
+                      onChange={(e) => updateBlockName(block.id, block.name, e.target.value)}
+                      className="w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 focus:border-b-2 focus:border-brand-500 focus:outline-none"
+                      placeholder="Nome da etapa (ex: Massa, Recheio)"
+                    />
+                    <button
+                      onClick={() => removeBlock(block.id, block.name)}
+                      className="ml-4 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+                      title="Remover Etapa"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                  <div className="space-y-2">
-                    {items.map((r) => {
-                      const idx = r.originalIndex
-                      const ing = ingMap[r.ingredient_id]
-                      const qty = parseFloat(r.quantity) || 0
-                      const cost = ing ? qty * Number(ing.cost_per_unit) : 0
-                      return (
-                        <div
-                          key={r.ingredient_id}
-                          className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3"
-                        >
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
-                            <p className="text-xs text-gray-400">
-                              {format(ing?.cost_per_unit || 0)}/{ing?.unit}
-                            </p>
-                          </div>
-                          <div className="w-28">
-                            <div className="relative">
-                              <input
-                                type="number"
-                                min="0"
-                                step="any"
-                                placeholder="Qtd"
-                                value={r.quantity}
-                                onChange={(e) => {
-                                  const next = [...rows]
-                                  next[idx].quantity = e.target.value
-                                  setRows(next)
-                                }}
-                                className="h-9 w-full rounded-lg border border-gray-300 pl-3 pr-8 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                              />
-                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                                {ing?.unit}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="w-20 text-right text-sm font-semibold text-gray-900">
-                            {format(cost)}
-                          </div>
+
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      className="pl-9 bg-white"
+                      placeholder="Buscar ingrediente para adicionar..."
+                      value={blockSearch}
+                      onChange={(e) =>
+                        setSearches({ ...searches, [block.id]: e.target.value })
+                      }
+                    />
+                    {blockSearch && avail.length > 0 && (
+                      <div className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                        {avail.slice(0, 8).map((i) => (
                           <button
-                            onClick={() => setRows(rows.filter((_, i) => i !== idx))}
-                            className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+                            key={i.id}
+                            onClick={() => addRow(i.id, block.name, block.id)}
+                            className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-brand-50"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <span>{i.name}</span>
+                            <span className="text-xs text-gray-400">
+                              {format(i.cost_per_unit)}/{i.unit}
+                            </span>
                           </button>
-                        </div>
-                      )
-                    })}
+                        ))}
+                      </div>
+                    )}
                   </div>
+
+                  {blockRows.length === 0 ? (
+                    <p className="py-2 text-center text-sm text-gray-400">
+                      Nenhum ingrediente adicionado nesta etapa.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {blockRows.map((r) => {
+                        const idx = r.originalIndex
+                        const ing = ingMap[r.ingredient_id]
+                        const qty = parseFloat(r.quantity) || 0
+                        const cost = ing ? qty * Number(ing.cost_per_unit) : 0
+                        return (
+                          <div
+                            key={r.ingredient_id}
+                            className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm"
+                          >
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
+                              <p className="text-xs text-gray-400">
+                                {format(ing?.cost_per_unit || 0)}/{ing?.unit}
+                              </p>
+                            </div>
+                            <div className="w-28">
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="any"
+                                  placeholder="Qtd"
+                                  value={r.quantity}
+                                  onChange={(e) => {
+                                    const next = [...rows]
+                                    next[idx].quantity = e.target.value
+                                    setRows(next)
+                                  }}
+                                  className="h-9 w-full rounded-lg border border-gray-300 pl-3 pr-8 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                                  {ing?.unit}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-20 text-right text-sm font-semibold text-gray-900">
+                              {format(cost)}
+                            </div>
+                            <button
+                              onClick={() => setRows(rows.filter((_, i) => i !== idx))}
+                              className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+              )
+            })}
+          </div>
         </div>
 
         {/* Custos extras */}
