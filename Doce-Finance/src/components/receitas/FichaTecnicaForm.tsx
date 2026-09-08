@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, Search, Save } from 'lucide-react'
+import { Plus, Trash2, Search, Save, Pencil } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useCurrency } from '@/hooks/useCurrency'
@@ -309,16 +309,19 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                   className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 shadow-sm"
                 >
                   <div className="mb-4 flex items-center justify-between">
-                    <input
-                      type="text"
-                      value={block.name}
-                      onChange={(e) => updateBlockName(block.id, e.target.value)}
-                      className="w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 focus:border-b-2 focus:border-brand-500 focus:outline-none"
-                      placeholder="Nome da etapa (ex: Massa, Recheio)"
-                    />
+                    <div className="group relative flex flex-1 items-center">
+                      <input
+                        type="text"
+                        value={block.name}
+                        onChange={(e) => updateBlockName(block.id, e.target.value)}
+                        className="peer w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 pr-8 focus:border-b-2 focus:border-brand-500 focus:outline-none"
+                        placeholder="Nome da etapa (ex: Massa, Recheio)"
+                      />
+                      <Pencil className="absolute right-2 h-4 w-4 text-gray-300 opacity-50 transition-opacity group-hover:opacity-100 peer-focus:opacity-0 pointer-events-none" />
+                    </div>
                     <button
                       onClick={() => removeBlock(block.id)}
-                      className="ml-4 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+                      className="ml-4 shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
                       title="Remover Etapa"
                     >
                       <Trash2 className="h-4 w-4" />
