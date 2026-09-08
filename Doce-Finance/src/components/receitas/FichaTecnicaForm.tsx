@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, Search, Save, Pencil } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -19,10 +19,160 @@ interface RecipeItemRow {
   quantity: string
   categoria: string
   blockId: string
+  ingredientData?: Ingredient
 }
 interface ExtraCost {
   nome: string
   valor: string
+}
+interface Block {
+  id: string
+  name: string
+}
+
+/* ─── Sub-componente do Bloco de Etapa ─────────────────────────────────── */
+interface RecipeBlockProps {
+  block: Block
+  rows: RecipeItemRow[]
+  ingredients: Ingredient[]
+  searchValue: string
+  format: (v: number) => string
+  onSearchChange: (val: string) => void
+  onAddRow: (ingredientId: string, blockName: string, blockId: string) => void
+  onRenameBlock: (id: string, newName: string) => void
+  onBlurBlock: (id: string, currentName: string) => void
+  onRemoveBlock: (id: string) => void
+  onRemoveRow: (blockId: string, ingredientId: string) => void
+  onQuantityChange: (blockId: string, ingredientId: string, qty: string) => void
+}
+
+function RecipeBlock({
+  block, rows, ingredients, searchValue, format,
+  onSearchChange, onAddRow, onRenameBlock, onBlurBlock,
+  onRemoveBlock, onRemoveRow, onQuantityChange,
+}: RecipeBlockProps) {
+  const s = searchValue.toLowerCase()
+  const avail = ingredients.filter(
+    (i) =>
+      i.name.toLowerCase().includes(s) &&
+      !rows.some((r) => r.ingredient_id === i.id && r.blockId === block.id),
+  )
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <label className="group relative flex flex-1 items-center">
+          <input
+            type="text"
+            value={block.name}
+            onChange={(e) => onRenameBlock(block.id, e.target.value)}
+            onBlur={() => onBlurBlock(block.id, block.name)}
+            className="peer w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 pr-8 focus:border-b-2 focus:border-brand-500 focus:outline-none"
+            placeholder="Nome da etapa (ex: Massa, Recheio)"
+          />
+          <Pencil className="absolute right-2 h-4 w-4 text-gray-400 transition-opacity peer-focus:opacity-0 cursor-pointer" />
+        </label>
+        <button
+          onClick={() => onRemoveBlock(block.id)}
+          className="ml-4 shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+          title="Remover Etapa"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Input
+          className="pl-9 bg-white"
+          placeholder="Buscar ingrediente para adicionar..."
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+        {searchValue && avail.length > 0 && (
+          <div className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+            {avail.slice(0, 8).map((i) => (
+              <button
+                key={i.id}
+                onClick={() => onAddRow(i.id, block.name, block.id)}
+                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-brand-50"
+              >
+                <span>{i.name}</span>
+                <span className="text-xs text-gray-400">
+                  {format(i.cost_per_unit)}/{i.unit}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        {searchValue && avail.length === 0 && (
+          <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-400 shadow-lg">
+            Nenhum ingrediente encontrado.
+          </div>
+        )}
+      </div>
+
+      {rows.length === 0 ? (
+        <p className="py-2 text-center text-sm text-gray-400">
+          Nenhum ingrediente adicionado nesta etapa.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((r) => {
+            const ing = r.ingredientData
+            const qty = parseFloat(r.quantity) || 0
+            const cost = ing ? qty * Number(ing.cost_per_unit) : 0
+            const hasEmptyQty = !r.quantity || parseFloat(r.quantity) <= 0
+            return (
+              <div
+                key={`${r.blockId}-${r.ingredient_id}`}
+                className={`flex items-center gap-3 rounded-lg border bg-white p-3 shadow-sm transition-colors ${
+                  hasEmptyQty ? 'border-orange-200 bg-orange-50/30' : 'border-gray-100'
+                }`}
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {format(ing?.cost_per_unit || 0)}/{ing?.unit}
+                  </p>
+                </div>
+                <div className="w-28">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      placeholder="Qtd"
+                      value={r.quantity}
+                      onChange={(e) => onQuantityChange(block.id, r.ingredient_id, e.target.value)}
+                      className={`h-9 w-full rounded-lg border pl-3 pr-8 text-sm focus:outline-none focus:ring-1 ${
+                        hasEmptyQty
+                          ? 'border-orange-300 focus:border-orange-400 focus:ring-orange-400'
+                          : 'border-gray-300 focus:border-brand-500 focus:ring-brand-500'
+                      }`}
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                      {ing?.unit}
+                    </span>
+                  </div>
+                </div>
+                <div className="w-20 text-right text-sm font-semibold text-gray-900">
+                  {format(cost)}
+                </div>
+                <button
+                  onClick={() => onRemoveRow(block.id, r.ingredient_id)}
+                  className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+                  title="Remover ingrediente"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
@@ -115,14 +265,6 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     [ingredients],
   )
 
-  const getAvailableIngredients = (blockId: string) => {
-    const s = (searches[blockId] || '').toLowerCase()
-    return ingredients.filter(
-      (i) =>
-        i.name.toLowerCase().includes(s) &&
-        !rows.some((r) => r.ingredient_id === i.id && r.blockId === blockId),
-    )
-  }
 
   const ingredientsCost = useMemo(
     () =>
@@ -144,30 +286,57 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     form.margin_percent < 100 ? totalCost / (1 - form.margin_percent / 100) : 0
   const profit = suggestedPrice - totalCost
 
-  const addRow = (id: string, blockName: string, blockId: string) => {
-    setRows([...rows, { ingredient_id: id, quantity: '', categoria: blockName, blockId }])
-    setSearches({ ...searches, [blockId]: '' })
-  }
+  const addRow = useCallback((id: string, blockName: string, blockId: string) => {
+    setRows((prev) => [...prev, { ingredient_id: id, quantity: '', categoria: blockName, blockId }])
+    setSearches((prev) => ({ ...prev, [blockId]: '' }))
+  }, [])
 
   const addBlock = () => {
-    setBlocks([...blocks, { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' }])
+    setBlocks((prev) => [...prev, { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' }])
   }
 
-  const updateBlockName = (id: string, newName: string) => {
-    setBlocks(blocks.map((b) => (b.id === id ? { ...b, name: newName } : b)))
-    setRows(rows.map((r) => (r.blockId === id ? { ...r, categoria: newName } : r)))
-  }
+  const updateBlockName = useCallback((id: string, newName: string) => {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, name: newName } : b)))
+    setRows((prev) => prev.map((r) => (r.blockId === id ? { ...r, categoria: newName } : r)))
+  }, [])
+
+  // Garante que o bloco nunca fica sem nome
+  const handleBlockBlur = useCallback((id: string, currentName: string) => {
+    if (!currentName.trim()) updateBlockName(id, 'Nova Etapa')
+  }, [updateBlockName])
 
   const removeBlock = (id: string) => {
     if (window.confirm('Tem certeza que deseja remover esta etapa e todos os seus ingredientes?')) {
-      setBlocks(blocks.filter((b) => b.id !== id))
-      setRows(rows.filter((r) => r.blockId !== id))
+      setBlocks((prev) => prev.filter((b) => b.id !== id))
+      setRows((prev) => prev.filter((r) => r.blockId !== id))
     }
   }
+
+  const handleQuantityChange = useCallback((blockId: string, ingredientId: string, qty: string) => {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.blockId === blockId && r.ingredient_id === ingredientId ? { ...r, quantity: qty } : r,
+      ),
+    )
+  }, [])
+
+  const handleRemoveRow = useCallback((blockId: string, ingredientId: string) => {
+    setRows((prev) =>
+      prev.filter((r) => !(r.blockId === blockId && r.ingredient_id === ingredientId)),
+    )
+  }, [])
 
   const handleSave = async () => {
     if (!form.name.trim()) return toast.error('Informe o nome da receita.')
     if (rows.length === 0) return toast.error('Adicione ao menos um ingrediente.')
+
+    const invalidRows = rows.filter((r) => !r.quantity || parseFloat(r.quantity) <= 0)
+    if (invalidRows.length > 0) {
+      const names = invalidRows
+        .map((r) => ingMap[r.ingredient_id]?.name || 'desconhecido')
+        .join(', ')
+      return toast.error(`Preencha a quantidade dos ingredientes: ${names}`)
+    }
 
     setSaving(true)
     try {
@@ -176,6 +345,15 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('Sessão expirada.')
 
+      const finalIngCost = rows.reduce((sum, r) => {
+        const ing = ingMap[r.ingredient_id]
+        const qty = parseFloat(r.quantity) || 0
+        return sum + (ing ? qty * Number(ing.cost_per_unit) : 0)
+      }, 0)
+      const finalExtraCost = extras.reduce((s, e) => s + (parseFloat(e.valor) || 0), 0)
+      const finalTotal = finalIngCost + finalExtraCost
+      const finalPrice = form.margin_percent < 100 ? finalTotal / (1 - form.margin_percent / 100) : 0
+
       const recipePayload = {
         user_id: user.id,
         name: form.name.trim(),
@@ -183,8 +361,11 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
         description: form.description || null,
         yield_quantity: parseFloat(form.yield_quantity) || 1,
         yield_unit: form.yield_unit,
-        extra_costs: extraCost,
+        extra_costs: finalExtraCost,
         margin_percent: form.margin_percent,
+        ingredients_cost: finalIngCost,
+        total_cost: finalTotal,
+        suggested_price: finalPrice,
       }
 
       let rid = recipeId
@@ -202,15 +383,18 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
         rid = data.id
       }
 
-      const riPayload = rows
-        .filter((r) => r.ingredient_id && parseFloat(r.quantity) > 0)
-        .map((r) => ({
+      const riPayload = rows.map((r) => {
+        const ing = ingMap[r.ingredient_id]
+        const qty = parseFloat(r.quantity) || 0
+        return {
           recipe_id: rid,
           ingredient_id: r.ingredient_id,
-          quantity: parseFloat(r.quantity),
-          unit: ingMap[r.ingredient_id]?.unit || 'g',
+          quantity: qty,
+          unit: ing?.unit || 'g',
+          cost: ing ? qty * Number(ing.cost_per_unit) : 0,
           categoria: r.categoria,
-        }))
+        }
+      })
 
       if (riPayload.length > 0) {
         const { error } = await supabase.from('recipe_ingredients').insert(riPayload)
@@ -297,122 +481,28 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
 
           <div className="space-y-6">
             {blocks.map((block) => {
-              const blockSearch = searches[block.id] || ''
-              const avail = getAvailableIngredients(block.id)
               const blockRows = rows
-                .map((r, idx) => ({ ...r, originalIndex: idx }))
                 .filter((r) => r.blockId === block.id)
+                .map((r) => ({ ...r, ingredientData: ingMap[r.ingredient_id] }))
 
               return (
-                <div
+                <RecipeBlock
                   key={block.id}
-                  className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 shadow-sm"
-                >
-                  <div className="mb-4 flex items-center justify-between">
-                    <label className="group relative flex flex-1 items-center">
-                      <input
-                        type="text"
-                        value={block.name}
-                        onChange={(e) => updateBlockName(block.id, e.target.value)}
-                        className="peer w-full bg-transparent text-lg font-bold text-gray-800 placeholder-gray-400 pr-8 focus:border-b-2 focus:border-brand-500 focus:outline-none"
-                        placeholder="Nome da etapa (ex: Massa, Recheio)"
-                      />
-                      <Pencil className="absolute right-2 h-4 w-4 text-gray-400 transition-opacity peer-focus:opacity-0 cursor-pointer" />
-                    </label>
-                    <button
-                      onClick={() => removeBlock(block.id)}
-                      className="ml-4 shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
-                      title="Remover Etapa"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      className="pl-9 bg-white"
-                      placeholder="Buscar ingrediente para adicionar..."
-                      value={blockSearch}
-                      onChange={(e) =>
-                        setSearches({ ...searches, [block.id]: e.target.value })
-                      }
-                    />
-                    {blockSearch && avail.length > 0 && (
-                      <div className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                        {avail.slice(0, 8).map((i) => (
-                          <button
-                            key={i.id}
-                            onClick={() => addRow(i.id, block.name, block.id)}
-                            className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-brand-50"
-                          >
-                            <span>{i.name}</span>
-                            <span className="text-xs text-gray-400">
-                              {format(i.cost_per_unit)}/{i.unit}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {blockRows.length === 0 ? (
-                    <p className="py-2 text-center text-sm text-gray-400">
-                      Nenhum ingrediente adicionado nesta etapa.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {blockRows.map((r) => {
-                        const idx = r.originalIndex
-                        const ing = ingMap[r.ingredient_id]
-                        const qty = parseFloat(r.quantity) || 0
-                        const cost = ing ? qty * Number(ing.cost_per_unit) : 0
-                        return (
-                          <div
-                            key={`${r.blockId}-${r.ingredient_id}`}
-                            className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm"
-                          >
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
-                              <p className="text-xs text-gray-400">
-                                {format(ing?.cost_per_unit || 0)}/{ing?.unit}
-                              </p>
-                            </div>
-                            <div className="w-28">
-                              <div className="relative">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="any"
-                                  placeholder="Qtd"
-                                  value={r.quantity}
-                                  onChange={(e) => {
-                                    const next = [...rows]
-                                    next[idx].quantity = e.target.value
-                                    setRows(next)
-                                  }}
-                                  className="h-9 w-full rounded-lg border border-gray-300 pl-3 pr-8 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                                />
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                                  {ing?.unit}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="w-20 text-right text-sm font-semibold text-gray-900">
-                              {format(cost)}
-                            </div>
-                            <button
-                              onClick={() => setRows(rows.filter((_, i) => i !== idx))}
-                              className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
+                  block={block}
+                  rows={blockRows}
+                  ingredients={ingredients}
+                  searchValue={searches[block.id] || ''}
+                  format={format}
+                  onSearchChange={(val) =>
+                    setSearches((prev) => ({ ...prev, [block.id]: val }))
+                  }
+                  onAddRow={addRow}
+                  onRenameBlock={updateBlockName}
+                  onBlurBlock={handleBlockBlur}
+                  onRemoveBlock={removeBlock}
+                  onRemoveRow={handleRemoveRow}
+                  onQuantityChange={handleQuantityChange}
+                />
               )
             })}
           </div>
@@ -500,16 +590,28 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
           </div>
 
           <div>
-            <div className="mb-1 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">Margem de lucro</label>
-              <span className="text-sm font-semibold text-brand-700">
-                {form.margin_percent}%
-              </span>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min="0"
+                  max="99"
+                  step="1"
+                  value={form.margin_percent}
+                  onChange={(e) => {
+                    const v = Math.min(99, Math.max(0, Number(e.target.value)))
+                    setForm({ ...form, margin_percent: v })
+                  }}
+                  className="w-14 rounded-md border border-gray-300 px-2 py-0.5 text-center text-sm font-semibold text-brand-700 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                <span className="text-sm font-semibold text-brand-700">%</span>
+              </div>
             </div>
             <input
               type="range"
               min="0"
-              max="80"
+              max="99"
               step="1"
               value={form.margin_percent}
               onChange={(e) =>
