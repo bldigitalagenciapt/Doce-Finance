@@ -13,10 +13,12 @@ import type { Ingredient, Recipe, YieldUnit } from '@/types/database'
 
 const CATEGORIES = ['Bolo', 'Torta', 'Doce', 'Salgado', 'Cupcake', 'Sobremesa', 'Outros']
 const YIELD_UNITS: YieldUnit[] = ['un', 'fatia', 'porção', 'g', 'kg', 'ml', 'L']
+const RECIPE_INGREDIENT_CATEGORIES = ['Geral', 'Massa', 'Recheio', 'Cobertura', 'Calda', 'Decoração']
 
 interface RecipeItemRow {
   ingredient_id: string
   quantity: string
+  categoria: string
 }
 interface ExtraCost {
   nome: string
@@ -32,6 +34,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
   const [saving, setSaving] = useState(false)
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [search, setSearch] = useState('')
+  const [selectedCategoria, setSelectedCategoria] = useState('Geral')
 
   const [form, setForm] = useState({
     name: '',
@@ -79,6 +82,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
           (riRes.data || []).map((ri: any) => ({
             ingredient_id: ri.ingredient_id,
             quantity: String(ri.quantity),
+            categoria: ri.categoria || 'Geral',
           })),
         )
       }
@@ -124,7 +128,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
   const profit = suggestedPrice - totalCost
 
   const addRow = (id: string) => {
-    setRows([...rows, { ingredient_id: id, quantity: '' }])
+    setRows([...rows, { ingredient_id: id, quantity: '', categoria: selectedCategoria }])
     setSearch('')
   }
 
@@ -172,6 +176,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
           ingredient_id: r.ingredient_id,
           quantity: parseFloat(r.quantity),
           unit: ingMap[r.ingredient_id]?.unit || 'g',
+          categoria: r.categoria,
         }))
 
       if (riPayload.length > 0) {
@@ -251,30 +256,44 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card">
           <h2 className="mb-4 text-base font-semibold text-gray-900">Ingredientes</h2>
 
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              className="pl-9"
-              placeholder="Buscar ingrediente para adicionar..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && availableIngredients.length > 0 && (
-              <div className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                {availableIngredients.slice(0, 8).map((i) => (
-                  <button
-                    key={i.id}
-                    onClick={() => addRow(i.id)}
-                    className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-brand-50"
-                  >
-                    <span>{i.name}</span>
-                    <span className="text-xs text-gray-400">
-                      {format(i.cost_per_unit)}/{i.unit}
-                    </span>
-                  </button>
+          <div className="flex gap-2 mb-4 relative">
+            <div className="w-40">
+              <Select
+                value={selectedCategoria}
+                onChange={(e) => setSelectedCategoria(e.target.value)}
+              >
+                {RECIPE_INGREDIENT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
-              </div>
-            )}
+              </Select>
+            </div>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                className="pl-9"
+                placeholder="Buscar ingrediente para adicionar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && availableIngredients.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                  {availableIngredients.slice(0, 8).map((i) => (
+                    <button
+                      key={i.id}
+                      onClick={() => addRow(i.id)}
+                      className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-brand-50"
+                    >
+                      <span>{i.name}</span>
+                      <span className="text-xs text-gray-400">
+                        {format(i.cost_per_unit)}/{i.unit}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {rows.length === 0 ? (
@@ -282,54 +301,70 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
               Nenhum ingrediente adicionado.
             </p>
           ) : (
-            <div className="space-y-2">
-              {rows.map((r, idx) => {
-                const ing = ingMap[r.ingredient_id]
-                const qty = parseFloat(r.quantity) || 0
-                const cost = ing ? qty * Number(ing.cost_per_unit) : 0
-                return (
-                  <div
-                    key={r.ingredient_id}
-                    className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
-                      <p className="text-xs text-gray-400">
-                        {format(ing?.cost_per_unit || 0)}/{ing?.unit}
-                      </p>
-                    </div>
-                    <div className="w-28">
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="0"
-                          step="any"
-                          placeholder="Qtd"
-                          value={r.quantity}
-                          onChange={(e) => {
-                            const next = [...rows]
-                            next[idx].quantity = e.target.value
-                            setRows(next)
-                          }}
-                          className="h-9 w-full rounded-lg border border-gray-300 pl-3 pr-8 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                        />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                          {ing?.unit}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-20 text-right text-sm font-semibold text-gray-900">
-                      {format(cost)}
-                    </div>
-                    <button
-                      onClick={() => setRows(rows.filter((_, i) => i !== idx))}
-                      className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+            <div className="space-y-6">
+              {Object.entries(
+                rows.reduce((acc, row, idx) => {
+                  if (!acc[row.categoria]) acc[row.categoria] = []
+                  acc[row.categoria].push({ ...row, originalIndex: idx })
+                  return acc
+                }, {} as Record<string, (RecipeItemRow & { originalIndex: number })[]>)
+              ).map(([cat, items]) => (
+                <div key={cat}>
+                  <div className="mb-3 rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-700">
+                    {cat}
                   </div>
-                )
-              })}
+                  <div className="space-y-2">
+                    {items.map((r) => {
+                      const idx = r.originalIndex
+                      const ing = ingMap[r.ingredient_id]
+                      const qty = parseFloat(r.quantity) || 0
+                      const cost = ing ? qty * Number(ing.cost_per_unit) : 0
+                      return (
+                        <div
+                          key={r.ingredient_id}
+                          className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3"
+                        >
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
+                            <p className="text-xs text-gray-400">
+                              {format(ing?.cost_per_unit || 0)}/{ing?.unit}
+                            </p>
+                          </div>
+                          <div className="w-28">
+                            <div className="relative">
+                              <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                placeholder="Qtd"
+                                value={r.quantity}
+                                onChange={(e) => {
+                                  const next = [...rows]
+                                  next[idx].quantity = e.target.value
+                                  setRows(next)
+                                }}
+                                className="h-9 w-full rounded-lg border border-gray-300 pl-3 pr-8 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                              />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                                {ing?.unit}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-20 text-right text-sm font-semibold text-gray-900">
+                            {format(cost)}
+                          </div>
+                          <button
+                            onClick={() => setRows(rows.filter((_, i) => i !== idx))}
+                            className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-danger"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
