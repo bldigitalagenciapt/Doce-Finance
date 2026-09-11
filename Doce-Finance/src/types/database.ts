@@ -117,6 +117,7 @@ export interface Order {
   notes: string | null
   subtotal: number
   discount: number
+  delivery_fee: number
   total: number
   paid_amount: number
   // Ciclo de vida do orçamento (opcional/anulável — seguro antes da migração)

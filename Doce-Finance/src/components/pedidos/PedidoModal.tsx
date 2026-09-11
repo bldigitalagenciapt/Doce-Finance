@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Truck, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Select, Textarea } from '@/components/ui/Input'
@@ -32,12 +32,14 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
   const [clients, setClients] = useState<Client[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])
 
+  const [hasDeliveryFee, setHasDeliveryFee] = useState(false)
   const [form, setForm] = useState({
     client_id: '',
     status: 'orcamento' as OrderStatus,
     delivery_date: '',
     delivery_time: '',
     discount: '',
+    delivery_fee: '',
     notes: '',
   })
   const [items, setItems] = useState<ItemRow[]>([])
@@ -59,12 +61,15 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
   useEffect(() => {
     async function loadOrder() {
       if (editing) {
+        const fee = editing.delivery_fee || 0
+        setHasDeliveryFee(fee > 0)
         setForm({
           client_id: editing.client_id || '',
           status: editing.status,
           delivery_date: editing.delivery_date || '',
           delivery_time: editing.delivery_time ? editing.delivery_time.slice(0, 5) : '',
           discount: String(editing.discount || ''),
+          delivery_fee: fee > 0 ? String(fee) : '',
           notes: editing.notes || '',
         })
         const { data } = await supabase
@@ -80,12 +85,14 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
           })),
         )
       } else {
+        setHasDeliveryFee(false)
         setForm({
           client_id: '',
           status: 'orcamento',
           delivery_date: '',
           delivery_time: '',
           discount: '',
+          delivery_fee: '',
           notes: '',
         })
         setItems([])
@@ -105,7 +112,8 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
     [items],
   )
   const discount = parseFloat(form.discount) || 0
-  const total = Math.max(0, subtotal - discount)
+  const deliveryFee = hasDeliveryFee ? (parseFloat(form.delivery_fee) || 0) : 0
+  const total = Math.max(0, subtotal + deliveryFee - discount)
 
   const addItem = () =>
     setItems([...items, { recipe_id: '', name: '', quantity: '1', unit_price: '' }])
@@ -140,6 +148,7 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
         delivery_date: form.delivery_date || null,
         delivery_time: form.delivery_time || null,
         discount,
+        delivery_fee: deliveryFee,
         notes: form.notes || null,
       }
 
@@ -343,6 +352,49 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
               <span className="text-gray-500">Subtotal</span>
               <span className="font-medium text-gray-900">{format(subtotal)}</span>
             </div>
+
+            {/* Taxa de entrega */}
+            {hasDeliveryFee ? (
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <div className="flex items-center gap-1.5 text-gray-500">
+                  <Truck className="h-3.5 w-3.5" />
+                  <span>Taxa de entrega</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-28">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="any"
+                      placeholder="0,00"
+                      value={form.delivery_fee}
+                      onChange={(e) => setForm({ ...form, delivery_fee: e.target.value })}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHasDeliveryFee(false)
+                      setForm({ ...form, delivery_fee: '' })
+                    }}
+                    className="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                    title="Remover taxa de entrega"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setHasDeliveryFee(true)}
+                className="flex w-full items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-400 transition-colors hover:border-brand-400 hover:text-brand-600"
+              >
+                <Truck className="h-3.5 w-3.5" />
+                Adicionar taxa de entrega
+              </button>
+            )}
+
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Desconto</span>
               <div className="w-28">

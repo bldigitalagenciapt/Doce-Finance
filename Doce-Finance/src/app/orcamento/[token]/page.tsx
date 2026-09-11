@@ -254,6 +254,12 @@ export default async function OrcamentoPage({ params }: PageProps) {
                   <span>Subtotal</span>
                   <span>{formatCurrency(order.subtotal, currency)}</span>
                 </div>
+                {(order.delivery_fee ?? 0) > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span className="flex items-center gap-1">🚚 Taxa de entrega</span>
+                    <span>+ {formatCurrency(order.delivery_fee, currency)}</span>
+                  </div>
+                )}
                 {order.discount > 0 && (
                   <div className="flex justify-between text-gray-600">
                     <span>Desconto</span>
