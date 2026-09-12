@@ -132,7 +132,17 @@ function RecipeBlock({
                 }`}
               >
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{ing?.name}</p>
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                    {ing?.name}
+                    {ing?.is_seed && (ing?.cost_per_unit ?? 0) === 0 && (
+                      <span
+                        title="Preço não definido — clique para atualizar"
+                        className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700"
+                      >
+                        ⚠️ Sem preço
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-gray-400">
                     {format(ing?.cost_per_unit || 0)}/{ing?.unit}
                   </p>
@@ -357,8 +367,8 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
       const finalTotal = finalIngCost + finalExtraCost
       const finalPrice = form.margin_percent < 100 ? finalTotal / (1 - form.margin_percent / 100) : 0
 
-      const recipePayload = {
-        user_id: user.id,
+      // Campos base — usados tanto no insert quanto no update
+      const basePayload = {
         name: form.name.trim(),
         category: form.category,
         description: form.description || null,
@@ -366,20 +376,26 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
         yield_unit: form.yield_unit,
         extra_costs: finalExtraCost,
         margin_percent: form.margin_percent,
-        ingredients_cost: finalIngCost,
-        total_cost: finalTotal,
-        suggested_price: finalPrice,
       }
 
       let rid = recipeId
       if (rid) {
-        const { error } = await supabase.from('recipes').update(recipePayload).eq('id', rid)
+        // UPDATE: omite colunas geradas automaticamente pelo banco
+        // (total_cost, ingredients_cost, suggested_price são computed columns)
+        const { error } = await supabase.from('recipes').update(basePayload).eq('id', rid)
         if (error) throw error
         await supabase.from('recipe_ingredients').delete().eq('recipe_id', rid)
       } else {
+        // INSERT: envia também os valores calculados para popular a linha imediatamente
         const { data, error } = await supabase
           .from('recipes')
-          .insert(recipePayload)
+          .insert({
+            ...basePayload,
+            user_id: user.id,
+            ingredients_cost: finalIngCost,
+            total_cost: finalTotal,
+            suggested_price: finalPrice,
+          })
           .select('id')
           .single()
         if (error) throw error

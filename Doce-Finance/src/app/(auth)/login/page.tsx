@@ -39,6 +39,8 @@ export default function LoginPage() {
           options: { data: { full_name: form.fullName } },
         })
         if (error) throw error
+        // Popula ingredientes e receita modelo em background (fire-and-forget)
+        fetch('/api/onboarding/seed', { method: 'POST' }).catch(() => {})
         toast.success('Conta criada! Você já pode entrar.')
         setMode('login')
       }

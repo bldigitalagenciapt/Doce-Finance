@@ -72,7 +72,7 @@ export function IngredienteModal({ open, onClose, onSaved, editing }: Props) {
   const handleSave = async () => {
     if (!form.name.trim()) return toast.error('Informe o nome do ingrediente.')
     if (qty <= 0) return toast.error('A quantidade deve ser maior que zero.')
-    if (cost <= 0) return toast.error('O custo deve ser maior que zero.')
+    // custo 0 é permitido para ingredientes seed aguardando preenchimento
 
     setSaving(true)
     try {
@@ -112,6 +112,8 @@ export function IngredienteModal({ open, onClose, onSaved, editing }: Props) {
     }
   }
 
+  const isSeedWithoutPrice = !!(editing?.is_seed && editing?.cost_per_package === 0)
+
   return (
     <Modal
       open={open}
@@ -129,6 +131,17 @@ export function IngredienteModal({ open, onClose, onSaved, editing }: Props) {
       }
     >
       <div className="space-y-4">
+        {isSeedWithoutPrice && (
+          <div className="flex items-start gap-3 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3">
+            <span className="mt-0.5 text-lg leading-none">⚠️</span>
+            <div>
+              <p className="text-sm font-semibold text-orange-800">Preço de custo não definido</p>
+              <p className="text-xs text-orange-700 mt-0.5">
+                Este ingrediente foi criado como modelo. Informe o custo da embalagem para calcular suas receitas corretamente.
+              </p>
+            </div>
+          </div>
+        )}
         <Input
           label="Nome"
           placeholder="Ex.: Farinha de trigo"

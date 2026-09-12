@@ -57,6 +57,7 @@ export interface Ingredient {
   cost_per_package: number
   cost_per_unit: number
   stock_quantity: number
+  is_seed: boolean
   created_at: string
   updated_at: string
 }
