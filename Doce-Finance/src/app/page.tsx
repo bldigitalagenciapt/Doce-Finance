@@ -1,20 +1,15 @@
-﻿import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import LandingPage from '@/components/landing/LandingPage'
+﻿import { headers } from "next/headers"
+import LandingPage from "@/components/landing/LandingPage"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
-export default async function Home() {
-  // Se ja estiver logado, vai pro dashboard
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) redirect('/dashboard')
-
-  // Deteccao de pais via Vercel header
+export default function Home() {
+  // Deteccao de pais via Vercel header (server-side, sem Supabase)
   const headersList = headers()
-  const country = headersList.get('x-vercel-ip-country') || 'PT'
-  const isBrazil = country === 'BR'
+  const country = headersList.get("x-vercel-ip-country") || "PT"
+  const isBrazil = country === "BR"
 
+  // Sem verificacao de auth server-side aqui
+  // LandingPage verifica auth no client e redireciona se logado
   return <LandingPage isBrazil={isBrazil} />
 }

@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -50,9 +52,24 @@ const FAQS = [
 ]
 
 export default function LandingPage({ isBrazil }: Props) {
+  const router = useRouter()
   const [billing, setBilling] = useState<"monthly" | "yearly">("yearly")
   const [activeScreenshot, setActiveScreenshot] = useState(0)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
+
+  // Redireciona usuarios ja logados para o dashboard
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) router.replace("/dashboard")
+      } catch {
+        // Ignora erros de auth - mostra landing page
+      }
+    }
+    checkAuth()
+  }, [router])
   const [loading, setLoading] = useState(false)
 
   const currency = isBrazil ? "BRL" : "EUR"
