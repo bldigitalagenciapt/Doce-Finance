@@ -123,10 +123,10 @@ export default async function OrcamentoPage({ params }: PageProps) {
   const quoteMeta = QUOTE_STATE[quoteState]
   const respondable = isRespondable(order)
 
-  // QR Code Pix (apenas Brasil / chave Pix configurada)
+  // QR Code Pix (qualquer perfil com chave Pix configurada)
   let pixQrDataUrl: string | null = null
   let pixPayload: string | null = null
-  if (currency === 'BRL' && profile.pix_key) {
+  if (profile.pix_key) {
     pixPayload = buildPixPayload({
       pixKey: profile.pix_key,
       merchantName: atelier,

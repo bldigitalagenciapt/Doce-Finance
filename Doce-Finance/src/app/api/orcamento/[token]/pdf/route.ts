@@ -306,6 +306,7 @@ export async function GET(
     y -= bold ? 20 : 16
   }
   totRow('Subtotal', formatCurrency(order.subtotal, currency))
+  if ((order.delivery_fee ?? 0) > 0) totRow('Taxa de entrega', `+ ${formatCurrency(order.delivery_fee, currency)}`)
   if (order.discount > 0) totRow('Desconto', `- ${formatCurrency(order.discount, currency)}`)
   page.drawLine({ start: { x: totLabelX, y: y + 6 }, end: { x: totValRight, y: y + 6 }, thickness: 0.5, color: LINE })
   y -= 6
@@ -318,7 +319,8 @@ export async function GET(
   // ─── Como pagar ───────────────────────────────────────────
   let pixPayload: string | null = null
   let qrImage: Awaited<ReturnType<typeof pdf.embedPng>> | null = null
-  if (currency === 'BRL' && profile.pix_key) {
+  // Gera QR Code para qualquer perfil com chave Pix configurada
+  if (profile.pix_key) {
     pixPayload = buildPixPayload({
       pixKey: profile.pix_key,
       merchantName: atelier,
