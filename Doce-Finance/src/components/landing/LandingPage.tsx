@@ -356,7 +356,7 @@ export default function LandingPage({ isBrazil }: Props) {
                 <div style={{ display: "flex", gap: 2, marginBottom: 12 }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} color="#F4A800" fill="#F4A800" />)}
                 </div>
-                <p style={{ fontSize: 15, color: "#444", lineHeight: 1.7, marginBottom: 20, fontStyle: "italic" }}>"{text}"</p>
+                <p style={{ fontSize: 15, color: "#444", lineHeight: 1.7, marginBottom: 20, fontStyle: "italic" }}>&quot;{text}&quot;</p>
                 <div>
                   <p style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>{name}</p>
                   <p style={{ fontSize: 12, color: "#888" }}>{city}</p>
