@@ -1,7 +1,21 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+﻿import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
 
-const PUBLIC_PATHS = ['/', '/login', '/auth', '/orcamento', '/api/orcamento', '/sucesso', '/api/checkout']
+// Prefixos que exigem autenticacao
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/pedidos",
+  "/clientes",
+  "/receitas",
+  "/ingredientes",
+  "/orcamentos",
+  "/agenda",
+  "/calculadora",
+  "/configuracoes",
+]
+
+// Rotas sempre publicas
+const ALWAYS_PUBLIC = ["/api/orcamento", "/api/checkout", "/orcamento", "/sucesso", "/login", "/auth"]
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -32,19 +46,21 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
-  // Não autenticado tentando acessar rota protegida
-  if (!user && !isPublic) {
+  const isAlwaysPublic = ALWAYS_PUBLIC.some((p) => path.startsWith(p))
+  const isProtected = !isAlwaysPublic && PROTECTED_PREFIXES.some((p) => path.startsWith(p))
+
+  // Nao autenticado tentando acessar rota protegida
+  if (!user && isProtected) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 
-  // Autenticado tentando acessar login
-  if (user && path.startsWith('/login')) {
+  // Autenticado tentando acessar login - vai pro dashboard
+  if (user && path.startsWith("/login")) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = "/dashboard"
     return NextResponse.redirect(url)
   }
 
