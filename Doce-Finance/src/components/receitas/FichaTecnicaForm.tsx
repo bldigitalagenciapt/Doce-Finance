@@ -386,15 +386,13 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
         if (error) throw error
         await supabase.from('recipe_ingredients').delete().eq('recipe_id', rid)
       } else {
-        // INSERT: envia também os valores calculados para popular a linha imediatamente
+        // INSERT: NÃO envia total_cost, ingredients_cost nem suggested_price
+        // pois são colunas GENERATED ALWAYS AS no PostgreSQL — o banco calcula automaticamente
         const { data, error } = await supabase
           .from('recipes')
           .insert({
             ...basePayload,
             user_id: user.id,
-            ingredients_cost: finalIngCost,
-            total_cost: finalTotal,
-            suggested_price: finalPrice,
           })
           .select('id')
           .single()

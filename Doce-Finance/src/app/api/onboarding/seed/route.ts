@@ -70,8 +70,7 @@ export async function POST() {
         extra_costs: 0,
         margin_percent: 100,
         ingredients_cost: 0,
-        total_cost: 0,
-        suggested_price: 0,
+        // total_cost e suggested_price são GENERATED ALWAYS AS — o banco calcula automaticamente
         is_active: true,
       })
       .select('id')
