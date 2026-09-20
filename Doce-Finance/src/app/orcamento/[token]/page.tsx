@@ -123,6 +123,11 @@ export default async function OrcamentoPage({ params }: PageProps) {
   const quoteMeta = QUOTE_STATE[quoteState]
   const respondable = isRespondable(order)
 
+  // Se o pedido já saiu da fase de orçamento (status != 'orcamento'),
+  // mostra o status real do pedido na caixa Detalhes em vez do quote_state
+  const isStillQuote = order.status === 'orcamento'
+  const detalhesEstadoLabel = isStillQuote ? quoteMeta.label : (status?.label || order.status)
+
   // QR Code Pix (qualquer perfil com chave Pix configurada)
   let pixQrDataUrl: string | null = null
   let pixPayload: string | null = null
@@ -193,7 +198,7 @@ export default async function OrcamentoPage({ params }: PageProps) {
                   <span
                     className="inline-block rounded-full bg-[#7C4A35]/10 px-2 py-0.5 text-xs font-medium text-[#7C4A35]"
                   >
-                    {quoteMeta.label}
+                    {detalhesEstadoLabel}
                   </span>
                 </p>
                 {order.delivery_date && (
