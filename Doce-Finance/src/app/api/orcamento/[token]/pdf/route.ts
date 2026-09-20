@@ -114,8 +114,18 @@ export async function GET(
   const atelier = profile.business_name || 'Atelier'
   const primaryColor = hexToRgbPdf(profile.brand_color, TERRACOTA)
 
+  // Recalcula os totais localmente para garantir consistência
+  // (orders.total no banco pode não incluir delivery_fee dependendo da versão do schema)
+  const realSubtotal = items.reduce((s, it) => s + (Number(it.subtotal) || 0), 0)
+  const realDeliveryFee = Number(order.delivery_fee) || 0
+  const realDiscount = Number(order.discount) || 0
+  const realTotal = realSubtotal + realDeliveryFee - realDiscount
+
   const createdAt = new Date(order.created_at)
-  const validUntil = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000)
+  // Usa a data de validade configurada pelo usuário; fallback: created_at + 7 dias
+  const validUntil = order.quote_valid_until
+    ? new Date(order.quote_valid_until)
+    : new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   // ─── Documento ────────────────────────────────────────────
   const pdf = await PDFDocument.create()
@@ -305,15 +315,15 @@ export async function GET(
     drawText(value, totValRight - f.widthOfTextAtSize(value, size), y, { size, font: f, color: bold ? primaryColor : color })
     y -= bold ? 20 : 16
   }
-  totRow('Subtotal', formatCurrency(order.subtotal, currency))
-  if ((order.delivery_fee ?? 0) > 0) totRow('Taxa de entrega', `+ ${formatCurrency(order.delivery_fee, currency)}`)
-  if (order.discount > 0) totRow('Desconto', `- ${formatCurrency(order.discount, currency)}`)
+  totRow('Subtotal', formatCurrency(realSubtotal, currency))
+  if (realDeliveryFee > 0) totRow('Taxa de entrega', `+ ${formatCurrency(realDeliveryFee, currency)}`)
+  if (realDiscount > 0) totRow('Desconto', `- ${formatCurrency(realDiscount, currency)}`)
   page.drawLine({ start: { x: totLabelX, y: y + 6 }, end: { x: totValRight, y: y + 6 }, thickness: 0.5, color: LINE })
   y -= 6
-  totRow('TOTAL', formatCurrency(order.total, currency), true)
+  totRow('TOTAL', formatCurrency(realTotal, currency), true)
   if (order.paid_amount > 0) {
     totRow('Pago', formatCurrency(order.paid_amount, currency))
-    totRow('Restante', formatCurrency(Math.max(order.total - order.paid_amount, 0), currency), false, GRAY_900)
+    totRow('Restante', formatCurrency(Math.max(realTotal - order.paid_amount, 0), currency), false, GRAY_900)
   }
 
   // ─── Como pagar ───────────────────────────────────────────

@@ -121,10 +121,18 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
   const onRecipeChange = (idx: number, recipeId: string) => {
     const next = [...items]
     const recipe = recipes.find((r) => r.id === recipeId)
+    // Limpa se nenhuma receita selecionada
+    if (!recipeId) {
+      next[idx].recipe_id = ''
+      setItems(next)
+      return
+    }
     next[idx].recipe_id = recipeId
     if (recipe) {
       next[idx].name = recipe.name
-      if (!next[idx].unit_price) next[idx].unit_price = String(recipe.suggested_price)
+      // Sempre preenche o preço sugerido ao selecionar/trocar a receita.
+      // O utilizador ainda pode editar o valor manualmente depois.
+      next[idx].unit_price = String(recipe.suggested_price ?? 0)
     }
     setItems(next)
   }
