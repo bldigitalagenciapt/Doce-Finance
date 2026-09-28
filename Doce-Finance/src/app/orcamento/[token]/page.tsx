@@ -131,7 +131,7 @@ export default async function OrcamentoPage({ params }: PageProps) {
   // QR Code Pix (qualquer perfil com chave Pix configurada)
   let pixQrDataUrl: string | null = null
   let pixPayload: string | null = null
-  if (profile.pix_key) {
+  if (currency === 'BRL' && profile.pix_key) {
     pixPayload = buildPixPayload({
       pixKey: profile.pix_key,
       merchantName: atelier,
@@ -145,7 +145,7 @@ export default async function OrcamentoPage({ params }: PageProps) {
     }
   }
 
-  const hasMbway = !!profile.mbway_phone
+  const hasMbway = currency === 'EUR' && !!profile.mbway_phone
   const remaining = Math.max(order.total - (order.paid_amount || 0), 0)
 
   return (

@@ -637,39 +637,47 @@ export default function ConfiguracoesPage() {
             <h2 className="text-base font-semibold text-gray-900">Formas de pagamento</h2>
           </div>
           <p className="mb-4 text-sm text-gray-500">
-            Estes dados aparecem no orçamento público que você envia aos clientes. A chave Pix
-            gera automaticamente um QR Code para pagamento.
+            Estes dados aparecem no orçamento público que você envia aos clientes.
+            {currency === 'BRL'
+              ? ' A chave Pix gera automaticamente um QR Code para pagamento.'
+              : ' Indique o seu número para receber por MBWay.'}
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Select
-              label="Tipo de chave Pix"
-              value={payment.pix_key_type}
-              onChange={(e) =>
-                setPayment({ ...payment, pix_key_type: e.target.value as PixKeyType | '' })
-              }
-            >
-              <option value="">Selecione…</option>
-              <option value="cpf">CPF</option>
-              <option value="cnpj">CNPJ</option>
-              <option value="email">E-mail</option>
-              <option value="telefone">Telefone</option>
-              <option value="aleatoria">Chave aleatória</option>
-            </Select>
-            <Input
-              label="Chave Pix"
-              placeholder="Sua chave Pix"
-              value={payment.pix_key}
-              onChange={(e) => setPayment({ ...payment, pix_key: e.target.value })}
-            />
-            <div>
-              <Input
-                label="Telefone Mbway"
-                placeholder="+351 912 345 678"
-                value={payment.mbway_phone}
-                onChange={(e) => setPayment({ ...payment, mbway_phone: e.target.value })}
-              />
-              <p className="mt-1 text-xs text-gray-400">Para clientes portugueses (opcional)</p>
-            </div>
+            {currency === 'BRL' && (
+              <>
+                <Select
+                  label="Tipo de chave Pix"
+                  value={payment.pix_key_type}
+                  onChange={(e) =>
+                    setPayment({ ...payment, pix_key_type: e.target.value as PixKeyType | '' })
+                  }
+                >
+                  <option value="">Selecione…</option>
+                  <option value="cpf">CPF</option>
+                  <option value="cnpj">CNPJ</option>
+                  <option value="email">E-mail</option>
+                  <option value="telefone">Telefone</option>
+                  <option value="aleatoria">Chave aleatória</option>
+                </Select>
+                <Input
+                  label="Chave Pix"
+                  placeholder="Sua chave Pix"
+                  value={payment.pix_key}
+                  onChange={(e) => setPayment({ ...payment, pix_key: e.target.value })}
+                />
+              </>
+            )}
+
+            {currency === 'EUR' && (
+              <div>
+                <Input
+                  label="Telefone MBWay"
+                  placeholder="+351 912 345 678"
+                  value={payment.mbway_phone}
+                  onChange={(e) => setPayment({ ...payment, mbway_phone: e.target.value })}
+                />
+              </div>
+            )}
           </div>
           <div className="mt-4">
             <Textarea

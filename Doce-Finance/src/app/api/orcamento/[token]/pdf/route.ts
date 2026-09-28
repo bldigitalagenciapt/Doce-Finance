@@ -330,8 +330,8 @@ export async function GET(
   // ─── Como pagar ───────────────────────────────────────────
   let pixPayload: string | null = null
   let qrImage: Awaited<ReturnType<typeof pdf.embedPng>> | null = null
-  // Gera QR Code para qualquer perfil com chave Pix configurada
-  if (profile.pix_key) {
+  // Gera QR Code para qualquer perfil com chave Pix configurada (apenas BRL)
+  if (currency === 'BRL' && profile.pix_key) {
     pixPayload = buildPixPayload({
       pixKey: profile.pix_key,
       merchantName: atelier,
@@ -347,7 +347,7 @@ export async function GET(
     }
   }
 
-  const hasMbway = !!profile.mbway_phone
+  const hasMbway = currency === 'EUR' && !!profile.mbway_phone
   const hasPayment = qrImage || hasMbway || profile.payment_instructions
 
     if (hasPayment) {
