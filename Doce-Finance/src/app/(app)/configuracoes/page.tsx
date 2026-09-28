@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import {
   Store,
   Coins,
@@ -12,7 +13,6 @@ import {
   FileDown,
   Settings,
   Mail,
-  MapPin,
   Percent,
   CalendarClock,
 } from 'lucide-react'
@@ -67,6 +67,31 @@ export default function ConfiguracoesPage() {
   })
   const [password, setPassword] = useState({ next: '', confirm: '' })
 
+  function applyProfile(p: Profile) {
+    setForm({
+      business_name: p.business_name || '',
+      full_name: p.full_name || '',
+      brand_color: p.brand_color || '',
+      logo_url: p.logo_url || '',
+    })
+    setContact({
+      phone: p.phone || '',
+      email_contact: p.email_contact || '',
+      address: p.address || '',
+      business_hours: p.business_hours || '',
+    })
+    setPrefs({
+      default_margin_percent: p.default_margin_percent ?? 30,
+      quote_validity_days: p.quote_validity_days ?? 7,
+    })
+    setPayment({
+      pix_key: p.pix_key || '',
+      pix_key_type: p.pix_key_type || '',
+      mbway_phone: p.mbway_phone || '',
+      payment_instructions: p.payment_instructions || '',
+    })
+  }
+
   useEffect(() => {
     async function load() {
       const {
@@ -93,31 +118,6 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     if (profile) applyProfile(profile)
   }, [profile])
-
-  function applyProfile(p: Profile) {
-    setForm({
-      business_name: p.business_name || '',
-      full_name: p.full_name || '',
-      brand_color: p.brand_color || '',
-      logo_url: p.logo_url || '',
-    })
-    setContact({
-      phone: p.phone || '',
-      email_contact: p.email_contact || '',
-      address: p.address || '',
-      business_hours: p.business_hours || '',
-    })
-    setPrefs({
-      default_margin_percent: p.default_margin_percent ?? 30,
-      quote_validity_days: p.quote_validity_days ?? 7,
-    })
-    setPayment({
-      pix_key: p.pix_key || '',
-      pix_key_type: p.pix_key_type || '',
-      mbway_phone: p.mbway_phone || '',
-      payment_instructions: p.payment_instructions || '',
-    })
-  }
 
   async function getUser() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -407,7 +407,7 @@ export default function ConfiguracoesPage() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Logo do Atelier</label>
               <div className="flex items-center gap-4">
                 {form.logo_url ? (
-                  <img src={form.logo_url} alt="Logo" className="h-12 w-12 rounded object-cover" />
+                  <Image src={form.logo_url} alt="Logo" width={48} height={48} className="h-12 w-12 rounded object-cover" unoptimized />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-gray-400">
                     <Store className="h-6 w-6" />

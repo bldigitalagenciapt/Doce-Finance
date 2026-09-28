@@ -32,7 +32,7 @@ function hexToRgbPdf(hex: string | null | undefined, fallback: ReturnType<typeof
         parseInt(cleanHex.substring(4, 6), 16) / 255
       )
     }
-  } catch (e) {
+  } catch {
     // fallback if parsing fails
   }
   return fallback

@@ -358,14 +358,7 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('Sessão expirada.')
 
-      const finalIngCost = rows.reduce((sum, r) => {
-        const ing = ingMap[r.ingredient_id]
-        const qty = parseFloat(r.quantity) || 0
-        return sum + (ing ? qty * Number(ing.cost_per_unit) : 0)
-      }, 0)
       const finalExtraCost = extras.reduce((s, e) => s + (parseFloat(e.valor) || 0), 0)
-      const finalTotal = finalIngCost + finalExtraCost
-      const finalPrice = form.margin_percent < 100 ? finalTotal / (1 - form.margin_percent / 100) : 0
 
       // Campos base — usados tanto no insert quanto no update
       const basePayload = {

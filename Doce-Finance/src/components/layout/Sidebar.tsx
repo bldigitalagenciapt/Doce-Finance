@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -37,10 +38,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col bg-white">
       <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6">
         {profile?.logo_url ? (
-          <img
+          <Image
             src={profile.logo_url}
             alt="Logo"
+            width={36}
+            height={36}
             className="h-9 w-9 rounded-lg object-cover shadow-sm"
+            unoptimized
           />
         ) : (
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-700 text-white">

@@ -86,7 +86,7 @@ export default function LandingPage({ isBrazil }: Props) {
       const data = await res.json()
       if (data.url) window.location.href = data.url
     } catch {
-      window.location.href = "/login"
+      router.push('/login')
     } finally {
       setLoading(false)
     }
