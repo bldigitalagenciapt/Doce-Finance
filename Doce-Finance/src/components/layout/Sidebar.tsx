@@ -10,7 +10,6 @@ import {
   Calculator,
   Users,
   ShoppingBag,
-  FileText,
   Calendar,
   Settings,
   ChefHat,
@@ -25,7 +24,6 @@ const nav = [
   { href: '/calculadora', label: 'Calculadora', icon: Calculator },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/pedidos', label: 'Pedidos', icon: ShoppingBag },
-  { href: '/orcamentos', label: 'Orçamentos', icon: FileText },
   { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]

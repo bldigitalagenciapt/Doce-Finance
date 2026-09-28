@@ -1,4 +1,4 @@
-﻿import { createServerClient } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 // Prefixos que exigem autenticacao
@@ -8,7 +8,6 @@ const PROTECTED_PREFIXES = [
   "/clientes",
   "/receitas",
   "/ingredientes",
-  "/orcamentos",
   "/agenda",
   "/calculadora",
   "/configuracoes",

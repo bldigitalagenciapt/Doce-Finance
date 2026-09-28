@@ -191,6 +191,15 @@ export default function PedidosPage() {
                 <TD className="font-semibold text-gray-900">{format(o.total)}</TD>
                 <TD>
                   <div className="flex items-center justify-end gap-1">
+                    <a
+                      href={`/api/orcamento/${o.id}/pdf?download=1`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Baixar PDF"
+                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-brand-700"
+                    >
+                      <FileDown className="h-4 w-4" />
+                    </a>
                     <button
                       onClick={() => openShare(o)}
                       title="Enviar orçamento"

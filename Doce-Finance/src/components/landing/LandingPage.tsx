@@ -22,7 +22,6 @@ const FEATURES = [
   { icon: BookOpen,    title: "Receitas & Fichas Técnicas", desc: "Calcule o custo exato de cada receita por ingrediente, com margem de lucro configurável." },
   { icon: ShoppingBag, title: "Pedidos e Entregas",         desc: "Organize todos os pedidos com status, datas de entrega e valores em tempo real." },
   { icon: BarChart3,   title: "Dashboard Financeiro",       desc: "Visualize faturamento, pedidos do mês e clientes num painel limpo e intuitivo." },
-  { icon: FileText,    title: "Orçamentos Profissionais",   desc: "Envie propostas com QR Code Pix, link de aceite e validade automática." },
   { icon: CalendarDays,title: "Agenda de Entregas",         desc: "Calendário visual com todas as entregas agendadas para não perder nenhum prazo." },
   { icon: Calculator,  title: "Calculadora de Custos",      desc: "Simule preços por porção e taxas de entrega para vender em aplicativos." },
 ]
@@ -32,7 +31,6 @@ const SCREENSHOTS = [
   { src: "/screenshots/ingredientes.png", label: "Ingredientes", desc: "Custo por unidade automático" },
   { src: "/screenshots/receitas.png",     label: "Receitas",     desc: "Ficha técnica com precificação" },
   { src: "/screenshots/pedido-modal.png", label: "Pedidos",      desc: "Gestão de pedidos completa" },
-  { src: "/screenshots/orcamentos.png",   label: "Orçamentos",   desc: "Propostas profissionais" },
   { src: "/screenshots/agenda.png",       label: "Agenda",       desc: "Calendário de entregas" },
   { src: "/screenshots/calculadora.png",  label: "Calculadora",  desc: "Simulador de custos" },
   { src: "/screenshots/clientes.png",     label: "Clientes",     desc: "Base de clientes e histórico" },
