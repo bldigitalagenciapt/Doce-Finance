@@ -25,9 +25,9 @@ function isExpired(validUntil: string | null | undefined): boolean {
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  const { token } = params
+  const { token } = await params
   if (!isUuid(token)) {
     return NextResponse.json({ ok: false, error: 'invalid_token' }, { status: 400 })
   }

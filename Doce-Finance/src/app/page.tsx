@@ -1,11 +1,11 @@
-﻿import { headers } from "next/headers"
+import { headers } from "next/headers"
 import LandingPage from "@/components/landing/LandingPage"
 
 export const dynamic = "force-dynamic"
 
-export default function Home() {
+export default async function Home() {
   // Deteccao de pais via Vercel header (server-side, sem Supabase)
-  const headersList = headers()
+  const headersList = await headers()
   const country = headersList.get("x-vercel-ip-country") || "PT"
   const isBrazil = country === "BR"
 

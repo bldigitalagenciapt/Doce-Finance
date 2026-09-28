@@ -102,9 +102,10 @@ async function getOrcamento(token: string): Promise<OrcamentoData | null> {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  const data = await getOrcamento(params.token)
+  const { token } = await params
+  const data = await getOrcamento(token)
   if (!data) {
     return new NextResponse('Orçamento não encontrado.', { status: 404 })
   }
@@ -447,7 +448,7 @@ export async function GET(
 
   const url = new URL(req.url)
   const download = url.searchParams.get('download') === '1'
-  const filename = `orcamento-${order.order_number ?? params.token.slice(0, 8)}.pdf`
+  const filename = `orcamento-${order.order_number ?? token.slice(0, 8)}.pdf`
 
   return new NextResponse(Buffer.from(pdfBytes), {
     status: 200,

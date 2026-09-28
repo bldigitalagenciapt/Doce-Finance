@@ -16,9 +16,9 @@ function isUuid(value: string): boolean {
  */
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  const { token } = params
+  const { token } = await params
   if (!isUuid(token)) {
     return NextResponse.json({ ok: false }, { status: 400 })
   }

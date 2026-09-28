@@ -17,7 +17,7 @@ const SEED_INGREDIENTS = [
 
 export async function POST() {
   try {
-    const supabaseUser = createClient()
+    const supabaseUser = await createClient()
     const { data: { user }, error: userErr } = await supabaseUser.auth.getUser()
     if (userErr || !user) {
       return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
