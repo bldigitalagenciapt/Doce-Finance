@@ -151,7 +151,7 @@ export default function LandingPage({ isBrazil }: Props) {
             <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#444", textDecoration: "none" }}>Entrar</Link>
             <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
               Começar agora
-            </a>>
+            </a>
           </div>
         </div>
       </nav>
@@ -175,7 +175,7 @@ export default function LandingPage({ isBrazil }: Props) {
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
               <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
                 Começar agora <ArrowRight size={18} />
-              </a>>
+              </a>
               <a href="#screenshots" className="btn-outline" style={{ textDecoration: "none" }}>
                 Ver demonstração
               </a>
