@@ -13,47 +13,70 @@ import {
 
 interface Props { isBrazil: boolean }
 
+const STRIPE_LINKS = {
+  mensal: "https://buy.stripe.com/test_14AfZh8Pi9Vs02Z6P94Ni00",
+  anual: "https://buy.stripe.com/test_aFa4gz1mQ5FcbLH8Xh4Ni01"
+};
+
 const PRICING = {
-  BRL: { monthly: "14,90", yearly: "149,00", currency: "R$", saving: "25%", yearlySub: "12,42/mês" },
-  EUR: { monthly: "6,90",  yearly: "69,99",  currency: "€",  saving: "15%", yearlySub: "5,83/mês" },
+  BRL: { monthly: "14,90", yearly: "149,90", currency: "R$", saving: "17%", yearlySub: "~12,49 / mês" },
+  EUR: { monthly: "6,90", yearly: "69,90", currency: "€", saving: "17%", yearlySub: "~5,82 / mês" },
 }
 
 const FEATURES = [
-  { icon: BookOpen,    title: "Receitas & Fichas Técnicas", desc: "Calcule o custo exato de cada receita por ingrediente, com margem de lucro configurável." },
-  { icon: ShoppingBag, title: "Pedidos e Entregas",         desc: "Organize todos os pedidos com status, datas de entrega e valores em tempo real." },
-  { icon: BarChart3,   title: "Dashboard Financeiro",       desc: "Visualize faturamento, pedidos do mês e clientes num painel limpo e intuitivo." },
-  { icon: CalendarDays,title: "Agenda de Entregas",         desc: "Calendário visual com todas as entregas agendadas para não perder nenhum prazo." },
-  { icon: Calculator,  title: "Calculadora de Custos",      desc: "Simule preços por porção e taxas de entrega para vender em aplicativos." },
+  { icon: BookOpen, title: "Receitas & Fichas Técnicas", desc: "Calcule o custo exato de cada receita por ingrediente, com margem de lucro configurável." },
+  { icon: ShoppingBag, title: "Pedidos e Entregas", desc: "Organize todos os pedidos com status, datas de entrega e valores em tempo real." },
+  { icon: BarChart3, title: "Dashboard Financeiro", desc: "Visualize faturamento, pedidos do mês e clientes num painel limpo e intuitivo." },
+  { icon: CalendarDays, title: "Agenda de Entregas", desc: "Calendário visual com todas as entregas agendadas para não perder nenhum prazo." },
+  { icon: Calculator, title: "Calculadora de Custos", desc: "Simule preços por porção e taxas de entrega para vender em aplicativos." },
 ]
 
 const SCREENSHOTS = [
-  { src: "/screenshots/dashboard.png",    label: "Dashboard",    desc: "Visão geral do seu atelier" },
+  { src: "/screenshots/dashboard.png", label: "Dashboard", desc: "Visão geral do seu atelier" },
   { src: "/screenshots/ingredientes.png", label: "Ingredientes", desc: "Custo por unidade automático" },
-  { src: "/screenshots/receitas.png",     label: "Receitas",     desc: "Ficha técnica com precificação" },
-  { src: "/screenshots/pedido-modal.png", label: "Pedidos",      desc: "Gestão de pedidos completa" },
-  { src: "/screenshots/agenda.png",       label: "Agenda",       desc: "Calendário de entregas" },
-  { src: "/screenshots/calculadora.png",  label: "Calculadora",  desc: "Simulador de custos" },
-  { src: "/screenshots/clientes.png",     label: "Clientes",     desc: "Base de clientes e histórico" },
+  { src: "/screenshots/receitas.png", label: "Receitas", desc: "Ficha técnica com precificação" },
+  { src: "/screenshots/pedido-modal.png", label: "Pedidos", desc: "Gestão de pedidos completa" },
+  { src: "/screenshots/agenda.png", label: "Agenda", desc: "Calendário de entregas" },
+  { src: "/screenshots/calculadora.png", label: "Calculadora", desc: "Simulador de custos" },
+  { src: "/screenshots/clientes.png", label: "Clientes", desc: "Base de clientes e histórico" },
 ]
 
 const FAQS = [
-  { q: "Preciso de conhecimentos técnicos?",
-    a: "Não. O Doce Finance foi criado especialmente para confeiteiros e artesãos. A interface é simples e intuitiva, e você começa a usar em minutos." },
-  { q: "Funciona no celular?",
-    a: "Sim! O sistema é 100% responsivo e funciona perfeitamente no smartphone, tablet e computador." },
-  { q: "Posso cancelar quando quiser?",
-    a: "Sim, sem multas ou burocracia. Você pode cancelar a assinatura a qualquer momento pelo painel de configurações." },
-  { q: "Os meus dados ficam seguros?",
-    a: "Sim. Utilizamos Supabase (infraestrutura da AWS) com criptografia de ponta a ponta. Os seus dados são exclusivamente seus." },
-  { q: "A assinatura anual tem desconto?",
-    a: "Sim! No plano anual você economiza até 25% em comparação ao plano mensal. É cobrado uma única vez por ano." },
+  {
+    q: "Preciso de conhecimentos técnicos?",
+    a: "Não. O Doce Finance foi criado especialmente para confeiteiros e artesãos. A interface é simples e intuitiva, e você começa a usar em minutos."
+  },
+  {
+    q: "Funciona no celular?",
+    a: "Sim! O sistema é 100% responsivo e funciona perfeitamente no smartphone, tablet e computador."
+  },
+  {
+    q: "Posso cancelar quando quiser?",
+    a: "Sim, sem multas ou burocracia. Você pode cancelar a assinatura a qualquer momento pelo painel de configurações."
+  },
+  {
+    q: "Os meus dados ficam seguros?",
+    a: "Sim. Utilizamos Supabase (infraestrutura da AWS) com criptografia de ponta a ponta. Os seus dados são exclusivamente seus."
+  },
+  {
+    q: "A assinatura anual tem desconto?",
+    a: "Sim! No plano anual você economiza até 25% em comparação ao plano mensal. É cobrado uma única vez por ano."
+  },
 ]
 
 export default function LandingPage({ isBrazil }: Props) {
   const router = useRouter()
   const [billing, setBilling] = useState<"monthly" | "yearly">("yearly")
+  const [currency, setCurrency] = useState<"EUR" | "BRL">("EUR")
   const [activeScreenshot, setActiveScreenshot] = useState(0)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
+
+  // Detecta idioma e ajusta moeda
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.language.includes("pt-BR")) {
+      setCurrency("BRL")
+    }
+  }, [])
 
   // Redireciona usuarios ja logados para o dashboard
   useEffect(() => {
@@ -68,27 +91,8 @@ export default function LandingPage({ isBrazil }: Props) {
     }
     checkAuth()
   }, [router])
-  const [loading, setLoading] = useState(false)
 
-  const currency = isBrazil ? "BRL" : "EUR"
   const p = PRICING[currency]
-
-  const handleCheckout = async (plan: "monthly" | "yearly") => {
-    setLoading(true)
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, currency }),
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-    } catch {
-      router.push('/login')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#FAFAF8", color: "#1A1A1A" }}>
@@ -145,9 +149,9 @@ export default function LandingPage({ isBrazil }: Props) {
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#444", textDecoration: "none" }}>Entrar</Link>
-            <button className="btn-primary" style={{ padding: "8px 18px", fontSize: 14 }} onClick={() => handleCheckout(billing)}>
+            <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
               Começar agora
-            </button>
+            </a>>
           </div>
         </div>
       </nav>
@@ -169,9 +173,9 @@ export default function LandingPage({ isBrazil }: Props) {
               Calcule custos de receitas, gerencie pedidos, envie orçamentos profissionais com Pix e controle tudo do seu negócio — num só lugar.
             </p>
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-              <button className="btn-primary" style={{ fontSize: 17, padding: "16px 32px" }} onClick={() => handleCheckout(billing)} disabled={loading}>
-                {loading ? "Aguarde..." : "Começar agora"} <ArrowRight size={18} />
-              </button>
+              <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
+                Começar agora <ArrowRight size={18} />
+              </a>>
               <a href="#screenshots" className="btn-outline" style={{ textDecoration: "none" }}>
                 Ver demonstração
               </a>
@@ -286,34 +290,48 @@ export default function LandingPage({ isBrazil }: Props) {
             {isBrazil ? "Valores em Reais · para confeiteiras brasileiras" : "Valores em Euros · para confeiteiras europeias"}
           </p>
 
-          {/* Toggle */}
-          <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, marginTop: 24, position: "relative" }}>
-            <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#2D6A2F", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
-            {(["monthly","yearly"] as const).map(b => (
-              <button key={b} onClick={() => setBilling(b)}
-                style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, minWidth: 130, justifyContent: "center" }}>
-                {b === "monthly" ? "Mensal" : "Anual"}
-                {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#2D6A2F", color: billing === "yearly" ? "#fff" : "#fff", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>-{p.saving}</span>}
+          {/* Toggles */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginTop: 24 }}>
+            {/* Currency Toggle */}
+            <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, position: "relative" }}>
+              <div style={{ position: "absolute", top: 4, bottom: 4, left: currency === "EUR" ? 4 : "50%", width: "calc(50% - 4px)", background: "#fff", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
+              <button onClick={() => setCurrency("EUR")} style={{ position: "relative", zIndex: 1, background: "transparent", color: currency === "EUR" ? "#111" : "#666", border: "none", borderRadius: 50, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", minWidth: 120 }}>
+                🇵🇹 EUR (€)
               </button>
-            ))}
+              <button onClick={() => setCurrency("BRL")} style={{ position: "relative", zIndex: 1, background: "transparent", color: currency === "BRL" ? "#111" : "#666", border: "none", borderRadius: 50, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", minWidth: 120 }}>
+                🇧🇷 BRL (R$)
+              </button>
+            </div>
+
+            {/* Billing Toggle */}
+            <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, position: "relative" }}>
+              <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#2D6A2F", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
+              {(["monthly", "yearly"] as const).map(b => (
+                <button key={b} onClick={() => setBilling(b)}
+                  style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, minWidth: 130, justifyContent: "center" }}>
+                  {b === "monthly" ? "Mensal" : "Anual"}
+                  {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#2D6A2F", color: billing === "yearly" ? "#fff" : "#fff", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>Economize até {p.saving}</span>}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         <div className="price-grid" style={{ display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
           {/* Card único */}
-          <div style={{ background: "#fff", border: "2px solid #2D6A2F", borderRadius: 24, padding: 40, maxWidth: 420, width: "100%", position: "relative", boxShadow: "0 16px 64px rgba(45,106,47,0.15)" }}>
+          <div style={{ background: "#fff", border: "2px solid #2D6A2F", borderRadius: 24, padding: 40, maxWidth: 420, width: "100%", position: "relative", boxShadow: "0 16px 64px rgba(45,106,47,0.15)", transition: "all 0.3s ease" }}>
             <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#2D6A2F", color: "#fff", borderRadius: 20, padding: "4px 18px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
               ✨ Acesso Completo
             </div>
             <div style={{ marginBottom: 24, marginTop: 8 }}>
               <p style={{ fontSize: 14, color: "#888", marginBottom: 4 }}>Doce Finance</p>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 22, fontWeight: 700, color: "#333" }}>{p.currency}</span>
-                <span style={{ fontSize: 52, fontWeight: 900, color: "#111", lineHeight: 1 }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: "#333", transition: "all 0.3s ease" }}>{p.currency}</span>
+                <span style={{ fontSize: 52, fontWeight: 900, color: "#111", lineHeight: 1, transition: "all 0.3s ease" }}>
                   {billing === "monthly" ? p.monthly : p.yearly}
                 </span>
               </div>
-              <p style={{ color: "#888", fontSize: 14, marginTop: 4 }}>
+              <p style={{ color: "#888", fontSize: 14, marginTop: 4, minHeight: 20 }}>
                 {billing === "monthly" ? "por mês" : `por ano · equivale a ${p.currency} ${p.yearlySub}`}
               </p>
             </div>
@@ -336,13 +354,12 @@ export default function LandingPage({ isBrazil }: Props) {
               ))}
             </div>
 
-            <button className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px" }}
-              onClick={() => handleCheckout(billing)} disabled={loading}>
-              {loading ? "A processar..." : `Assinar ${billing === "monthly" ? "Mensal" : "Anual"}`}
+            <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px", textDecoration: "none" }}>
+              Assinar {billing === "monthly" ? "Mensal" : "Anual"}
               <ArrowRight size={18} />
-            </button>
+            </a>
             <p style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 14 }}>
-              Sem compromisso · Cancele quando quiser
+              Pagamento seguro via Stripe · Cancele quando quiser
             </p>
           </div>
         </div>
@@ -427,12 +444,11 @@ export default function LandingPage({ isBrazil }: Props) {
             O seu atelier merece uma gestão profissional.<br />
             Junte-se às confeiteiras que já transformaram o negócio.
           </p>
-          <button className="btn-primary" style={{ background: "#fff", color: "#2D6A2F", fontSize: 18, padding: "18px 40px", borderRadius: 14 }}
-            onClick={() => handleCheckout(billing)} disabled={loading}>
-            {loading ? "Aguarde..." : "Assinar agora"} <ArrowRight size={20} />
-          </button>
+          <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ background: "#fff", color: "#2D6A2F", fontSize: 18, padding: "18px 40px", borderRadius: 14, textDecoration: "none" }}>
+            Assinar agora <ArrowRight size={20} />
+          </a>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 16 }}>
-            {isBrazil ? `A partir de R$ ${p.monthly}/mês` : `A partir de € ${p.monthly}/mês`} · Sem compromisso
+            A partir de {p.currency} {p.monthly}/mês · Sem compromisso
           </p>
         </div>
       </div>
@@ -452,7 +468,7 @@ export default function LandingPage({ isBrazil }: Props) {
               <Mail size={14} /> Suporte
             </a>
             <a href="https://instagram.com" target="_blank" rel="noopener" style={{ color: "#888", fontSize: 14, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg> Instagram
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg> Instagram
             </a>
           </div>
           <p style={{ color: "#555", fontSize: 13 }}>© {new Date().getFullYear()} Doce Finance. Todos os direitos reservados.</p>
