@@ -112,6 +112,14 @@ export default function LandingPage({ isBrazil }: Props) {
         .tag { display: inline-block; background: #E8F5E9; color: #2D6A2F; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         .float { animation: float 4s ease-in-out infinite; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .feature-card:hover .feature-icon { transform: scale(1.1); background: #2D6A2F !important; }
+        .feature-card:hover .feature-icon svg { stroke: #fff !important; }
+        .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out, padding 0.3s ease; }
+        .faq-content.open { max-height: 200px; padding-bottom: 20px; }
         @media(max-width:768px){
           .hero-grid{flex-direction:column!important;}
           .feature-grid{grid-template-columns:1fr!important;}
@@ -121,7 +129,7 @@ export default function LandingPage({ isBrazil }: Props) {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #EBEBEB", position: "sticky", top: 0, zIndex: 100 }}>
+      <nav style={{ background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(235, 235, 235, 0.5)", boxShadow: "0 4px 20px rgba(0,0,0,0.03)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "#2D6A2F", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -147,7 +155,7 @@ export default function LandingPage({ isBrazil }: Props) {
       {/* ── HERO ── */}
       <div style={{ background: "linear-gradient(160deg,#F0F7F0 0%,#FAFAF8 60%,#FFF8F0 100%)", padding: "80px 24px 60px" }}>
         <div className="hero-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 64 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="fade-in-up" style={{ flex: 1, minWidth: 0 }}>
             <div className="badge">
               <Sparkles size={14} />
               Gestão para confeiteiros
@@ -250,11 +258,11 @@ export default function LandingPage({ isBrazil }: Props) {
         </div>
         <div className="feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
           {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} style={{ background: "#fff", border: "1px solid #E8E8E4", borderRadius: 16, padding: 28, transition: "box-shadow 0.2s, transform 0.2s" }}
+            <div key={title} className="feature-card" style={{ background: "#fff", border: "1px solid #E8E8E4", borderRadius: 16, padding: 28, transition: "box-shadow 0.2s, transform 0.2s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(45,106,47,0.12)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)" }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.transform = "none" }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: "#E8F5E9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                <Icon size={22} color="#2D6A2F" />
+              <div className="feature-icon" style={{ width: 48, height: 48, borderRadius: 12, background: "#E8F5E9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, transition: "all 0.3s ease" }}>
+                <Icon size={22} color="#2D6A2F" style={{ transition: "stroke 0.3s ease" }} />
               </div>
               <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: "#111" }}>{title}</h3>
               <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>{desc}</p>
@@ -284,6 +292,7 @@ export default function LandingPage({ isBrazil }: Props) {
             </div>
             <Image
               key={activeScreenshot}
+              className="fade-in"
               src={SCREENSHOTS[activeScreenshot].src}
               alt={SCREENSHOTS[activeScreenshot].label}
               width={1100} height={620}
@@ -315,12 +324,13 @@ export default function LandingPage({ isBrazil }: Props) {
           </p>
 
           {/* Toggle */}
-          <div style={{ display: "inline-flex", background: "#F0F0EE", borderRadius: 50, padding: 4, marginTop: 24, gap: 4 }}>
+          <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, marginTop: 24, position: "relative" }}>
+            <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#2D6A2F", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
             {(["monthly","yearly"] as const).map(b => (
               <button key={b} onClick={() => setBilling(b)}
-                style={{ background: billing === b ? "#2D6A2F" : "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 6 }}>
+                style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, minWidth: 130, justifyContent: "center" }}>
                 {b === "monthly" ? "Mensal" : "Anual"}
-                {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#E8F5E9", color: billing === "yearly" ? "#fff" : "#2D6A2F", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>-{p.saving}</span>}
+                {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#2D6A2F", color: billing === "yearly" ? "#fff" : "#fff", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>-{p.saving}</span>}
               </button>
             ))}
           </div>
@@ -383,18 +393,21 @@ export default function LandingPage({ isBrazil }: Props) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
             {[
-              { name: "Ana Silva", city: "São Paulo 🇧🇷", text: "Antes eu usava planilha e perdia horas calculando. Agora o Doce Finance faz tudo em segundos. Meu lucro aumentou 30%!" },
-              { name: "Carla Mendes", city: "Porto 🇵🇹", text: "Os orçamentos ficam super profissionais. Meus clientes adoram receber o link com o QR Code Pix. Recomendo muito!" },
-              { name: "Fernanda Costa", city: "Belo Horizonte 🇧🇷", text: "Finalmente sei exatamente quanto lucro em cada bolo. A calculadora de custo por porção é incrível!" },
-            ].map(({ name, city, text }) => (
-              <div key={name} style={{ background: "#fff", borderRadius: 16, padding: 28, border: "1px solid #E0EFE0" }}>
+              { name: "Ana Silva", city: "São Paulo 🇧🇷", text: "Antes eu usava planilha e perdia horas calculando. Agora o Doce Finance faz tudo em segundos. Meu lucro aumentou 30%!", avatar: "https://i.pravatar.cc/150?u=ana" },
+              { name: "Carla Mendes", city: "Porto 🇵🇹", text: "Os orçamentos ficam super profissionais. Meus clientes adoram receber o link com o QR Code Pix. Recomendo muito!", avatar: "https://i.pravatar.cc/150?u=carla" },
+              { name: "Fernanda Costa", city: "Belo Horizonte 🇧🇷", text: "Finalmente sei exatamente quanto lucro em cada bolo. A calculadora de custo por porção é incrível!", avatar: "https://i.pravatar.cc/150?u=fernanda" },
+            ].map(({ name, city, text, avatar }) => (
+              <div key={name} style={{ background: "#fff", borderRadius: 16, padding: 28, border: "1px solid #E0EFE0", display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", gap: 2, marginBottom: 12 }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} color="#F4A800" fill="#F4A800" />)}
                 </div>
-                <p style={{ fontSize: 15, color: "#444", lineHeight: 1.7, marginBottom: 20, fontStyle: "italic" }}>&quot;{text}&quot;</p>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>{name}</p>
-                  <p style={{ fontSize: 12, color: "#888" }}>{city}</p>
+                <p style={{ fontSize: 15, color: "#444", lineHeight: 1.7, marginBottom: 24, fontStyle: "italic", flexGrow: 1 }}>&quot;{text}&quot;</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <img src={avatar} alt={name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #E8F5E9" }} />
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>{name}</p>
+                    <p style={{ fontSize: 12, color: "#888" }}>{city}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -413,11 +426,11 @@ export default function LandingPage({ isBrazil }: Props) {
             <div key={i} className="faq-item">
               <button className="faq-btn" onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
                 {q}
-                <ChevronDown size={20} color="#666" style={{ transform: activeFaq === i ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }} />
+                <ChevronDown size={20} color="#666" style={{ transform: activeFaq === i ? "rotate(180deg)" : "none", transition: "transform 0.3s ease", flexShrink: 0 }} />
               </button>
-              {activeFaq === i && (
-                <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, paddingBottom: 20 }}>{a}</p>
-              )}
+              <div className={`faq-content ${activeFaq === i ? "open" : ""}`}>
+                <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, margin: 0 }}>{a}</p>
+              </div>
             </div>
           ))}
         </div>
