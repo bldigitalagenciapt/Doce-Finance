@@ -191,12 +191,49 @@ export default function LandingPage({ isBrazil }: Props) {
       </div>
 
       {/* ── SOCIAL PROOF ── */}
-      <div style={{ background: "#fff", borderTop: "1px solid #EBEBEB", borderBottom: "1px solid #EBEBEB", padding: "20px 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 40 }}>
-          <p style={{ fontSize: 14, color: "#888", fontWeight: 500 }}>Usado por confeiteiras em 🇧🇷 Brasil e 🇵🇹 Portugal</p>
-          {["⭐⭐⭐⭐⭐  «Mudou completamente como eu precifica»", "⭐⭐⭐⭐⭐  «Finalmente sei quanto lucro em cada bolo»", "⭐⭐⭐⭐⭐  «Os orçamentos ficam super profissionais»"].map((t, i) => (
-            <p key={i} style={{ fontSize: 13, color: "#555", fontStyle: "italic" }}>{t}</p>
-          ))}
+      <div style={{ background: "#fff", borderTop: "1px solid #EBEBEB", borderBottom: "1px solid #EBEBEB", padding: "40px 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p style={{ textAlign: "center", fontSize: 14, color: "#888", fontWeight: 600, marginBottom: 32, textTransform: "uppercase", letterSpacing: "1px" }}>
+            Usado por confeiteiras de sucesso no 🇧🇷 Brasil e 🇵🇹 Portugal
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", justifyContent: "center", gap: 24 }}>
+            {[
+              {
+                text: "Mudou completamente como eu precifico os meus doces, recomendo muito!",
+                name: "Mariana Souza",
+                role: "Confeiteira Artesanal",
+                avatar: "https://i.pravatar.cc/150?u=mariana"
+              },
+              {
+                text: "Finalmente sei quanto lucro em cada bolo. O meu negócio cresceu imenso.",
+                name: "Inês Carvalho",
+                role: "Cake Designer",
+                avatar: "https://i.pravatar.cc/150?u=ines"
+              },
+              {
+                text: "Os orçamentos ficam super profissionais. Os clientes fecham mais rápido.",
+                name: "Beatriz Lima",
+                role: "Atelier de Doces",
+                avatar: "https://i.pravatar.cc/150?u=beatriz"
+              }
+            ].map((t, i) => (
+              <div key={i} style={{ flex: "1 1 300px", maxWidth: 350, background: "#FAFAF8", padding: 24, borderRadius: 16, border: "1px solid #E8E8E4", display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
+                  {[...Array(5)].map((_, idx) => <Star key={idx} size={14} color="#F4A800" fill="#F4A800" />)}
+                </div>
+                <p style={{ fontSize: 14, color: "#444", fontStyle: "italic", lineHeight: 1.6, flexGrow: 1, marginBottom: 20 }}>
+                  "{t.text}"
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <img src={t.avatar} alt={t.name} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", border: "2px solid #E8F5E9" }} />
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>{t.name}</p>
+                    <p style={{ fontSize: 12, color: "#888" }}>{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
