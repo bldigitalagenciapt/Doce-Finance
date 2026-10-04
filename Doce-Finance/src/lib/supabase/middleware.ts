@@ -11,6 +11,7 @@ const PROTECTED_PREFIXES = [
   "/agenda",
   "/calculadora",
   "/configuracoes",
+  "/paywall",
 ]
 
 // Rotas sempre publicas
@@ -61,6 +62,26 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = "/dashboard"
     return NextResponse.redirect(url)
+  }
+
+  // Verifica expiracao do trial
+  if (user && isProtected && !path.startsWith('/paywall')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status, trial_ends_at')
+      .eq('id', user.id)
+      .single()
+
+    if (profile) {
+      const isTrialing = profile.subscription_status === 'trialing'
+      const isExpired = profile.trial_ends_at ? new Date(profile.trial_ends_at) < new Date() : false
+
+      if (isTrialing && isExpired) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/paywall"
+        return NextResponse.redirect(url)
+      }
+    }
   }
 
   return supabaseResponse

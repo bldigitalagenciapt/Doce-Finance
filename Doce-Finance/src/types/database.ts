@@ -43,6 +43,13 @@ export interface Profile {
   // Preferências
   default_margin_percent: number | null
   quote_validity_days: number | null
+  // Assinatura
+  subscription_status?: string
+  trial_starts_at?: string
+  trial_ends_at?: string
+  stripe_customer_id?: string
+  stripe_subscription_id?: string
+  currency_preference?: string
   created_at: string
   updated_at: string
 }

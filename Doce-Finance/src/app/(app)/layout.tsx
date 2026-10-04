@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
+import { TrialBanner } from '@/components/layout/TrialBanner'
 import { useProfile } from '@/hooks/useProfile'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -30,9 +31,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Conteúdo */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        <TrialBanner />
         <Header onMenu={() => setSidebarOpen(true)} />
-        <main className="mx-auto max-w-7xl p-4 lg:p-8">{children}</main>
+        <main className="mx-auto w-full max-w-7xl p-4 lg:p-8 flex-1">{children}</main>
       </div>
     </div>
   )

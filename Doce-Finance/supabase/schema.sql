@@ -17,6 +17,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   avatar_url  TEXT,
   business_name TEXT DEFAULT 'Meu Atelier',
   currency    TEXT NOT NULL DEFAULT 'BRL' CHECK (currency IN ('BRL', 'EUR')),
+  subscription_status TEXT DEFAULT 'trialing',
+  trial_starts_at TIMESTAMPTZ DEFAULT NOW(),
+  trial_ends_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '15 days'),
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
+  currency_preference TEXT DEFAULT 'EUR',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
