@@ -66,7 +66,7 @@ const FAQS = [
 
 export default function LandingPage({ isBrazil }: Props) {
   const router = useRouter()
-  const [billing, setBilling] = useState<"monthly" | "yearly">("yearly")
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly")
   const [currency, setCurrency] = useState<"EUR" | "BRL">("EUR")
   const [activeScreenshot, setActiveScreenshot] = useState(0)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
