@@ -308,9 +308,9 @@ export default function LandingPage({ isBrazil }: Props) {
               <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#0F766E", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
               {(["monthly", "yearly"] as const).map(b => (
                 <button key={b} onClick={() => setBilling(b)}
-                  style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, minWidth: 130, justifyContent: "center" }}>
+                  style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, width: 140, justifyContent: "center" }}>
                   {b === "monthly" ? "Mensal" : "Anual"}
-                  {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#0F766E", color: billing === "yearly" ? "#fff" : "#fff", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>Economize até {p.saving}</span>}
+                  {b === "yearly" && <span style={{ position: "absolute", top: -14, right: -16, background: "#10B981", color: "#fff", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(16,185,129,0.3)", border: "2px solid #fff", whiteSpace: "nowrap" }}>Economize {p.saving}</span>}
                 </button>
               ))}
             </div>
