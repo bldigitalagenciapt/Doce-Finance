@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS public.recipe_ingredients (
   unit          TEXT NOT NULL DEFAULT 'g',
   cost          NUMERIC(12,6) GENERATED ALWAYS AS (0) STORED,  -- será atualizado via trigger
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(recipe_id, ingredient_id)
+  UNIQUE(recipe_id, ingredient_id, categoria)
 );
 
 -- Custo calculado = quantity * cost_per_unit do ingrediente

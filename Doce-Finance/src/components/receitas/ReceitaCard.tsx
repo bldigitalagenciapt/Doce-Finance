@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, Trash2 } from 'lucide-react'
 import type { Recipe } from '@/types/database'
 import { Badge } from '@/components/ui/Badge'
 import { useCurrency } from '@/hooks/useCurrency'
 
-export function ReceitaCard({ recipe }: { recipe: Recipe }) {
+export function ReceitaCard({ recipe, onDelete }: { recipe: Recipe; onDelete?: (id: string) => void }) {
   const { format } = useCurrency()
 
   return (
@@ -14,7 +14,7 @@ export function ReceitaCard({ recipe }: { recipe: Recipe }) {
       href={`/receitas/${recipe.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-card transition-shadow hover:shadow-md"
     >
-      <div className="flex h-32 items-center justify-center bg-brand-50">
+      <div className="relative flex h-32 items-center justify-center bg-brand-50">
         {recipe.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -24,6 +24,19 @@ export function ReceitaCard({ recipe }: { recipe: Recipe }) {
           />
         ) : (
           <BookOpen className="h-10 w-10 text-brand-300" />
+        )}
+        {onDelete && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onDelete(recipe.id)
+            }}
+            className="absolute right-2 top-2 rounded-full bg-white/80 p-2 text-gray-500 hover:bg-red-50 hover:text-red-500 shadow-sm transition-colors"
+            title="Excluir receita"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         )}
       </div>
       <div className="flex flex-1 flex-col p-4">

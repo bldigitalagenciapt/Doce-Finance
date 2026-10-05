@@ -35,6 +35,18 @@ export default function ReceitasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta receita?')) return
+    try {
+      const { error } = await supabase.from('recipes').delete().eq('id', id)
+      if (error) throw error
+      toast.success('Receita excluída com sucesso.')
+      setRecipes((prev) => prev.filter((r) => r.id !== id))
+    } catch (err: any) {
+      toast.error('Erro ao excluir a receita.')
+    }
+  }
+
   const categories = useMemo(
     () => Array.from(new Set(recipes.map((r) => r.category))).sort(),
     [recipes],
@@ -102,7 +114,7 @@ export default function ReceitasPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => (
-            <ReceitaCard key={r.id} recipe={r} />
+            <ReceitaCard key={r.id} recipe={r} onDelete={handleDelete} />
           ))}
         </div>
       )}
