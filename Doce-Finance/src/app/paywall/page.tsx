@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import { LogOut } from "lucide-react"
+import { CheckoutButton } from "./CheckoutButton"
 
 export default async function PaywallPage() {
   const cookieStore = await cookies()
@@ -78,12 +78,14 @@ export default async function PaywallPage() {
           <div className="border border-gray-200 rounded-xl p-6 hover:border-brand-500 transition-colors">
             <h3 className="text-lg font-semibold text-gray-900">Plano Mensal</h3>
             <div className="mt-4 flex justify-center items-baseline text-3xl font-extrabold text-brand-600">
-              <span className="mr-2">{isBRL ? 'R$49' : '€9'}</span><span className="text-xl text-gray-500">/mês</span>
+              <span className="mr-2">{isBRL ? 'R$ 14,90' : '€ 6,90'}</span><span className="text-xl text-gray-500">/mês</span>
             </div>
             <p className="mt-2 text-sm text-gray-500">Faturado mensalmente</p>
-            <Link href={currentStripeLinks.mensal} className="mt-6 block w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700">
-              Assinar Mensal
-            </Link>
+            <CheckoutButton 
+              plan="monthly" 
+              currency={userCurrency as 'EUR' | 'BRL'} 
+              label="Assinar Mensal" 
+            />
           </div>
 
           <div className="border border-brand-500 rounded-xl p-6 relative bg-brand-50">
@@ -94,12 +96,14 @@ export default async function PaywallPage() {
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Plano Anual</h3>
             <div className="mt-4 flex justify-center items-baseline text-3xl font-extrabold text-brand-600">
-              <span className="mr-2">{isBRL ? 'R$470' : '€86'}</span><span className="text-xl text-gray-500">/ano</span>
+              <span className="mr-2">{isBRL ? 'R$ 149,90' : '€ 69,90'}</span><span className="text-xl text-gray-500">/ano</span>
             </div>
             <p className="mt-2 text-sm text-gray-500">Faturado anualmente</p>
-            <Link href={currentStripeLinks.anual} className="mt-6 block w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700">
-              Assinar Anual
-            </Link>
+            <CheckoutButton 
+              plan="yearly" 
+              currency={userCurrency as 'EUR' | 'BRL'} 
+              label="Assinar Anual" 
+            />
           </div>
         </div>
         
