@@ -67,7 +67,7 @@ const FAQS = [
 export default function LandingPage({ isBrazil }: Props) {
   const router = useRouter()
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly")
-  const [currency, setCurrency] = useState<"EUR" | "BRL">("EUR")
+  const [currency, setCurrency] = useState<"EUR" | "BRL">(isBrazil ? "BRL" : "EUR")
   const [activeScreenshot, setActiveScreenshot] = useState(0)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
 
@@ -292,16 +292,7 @@ export default function LandingPage({ isBrazil }: Props) {
 
           {/* Toggles */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginTop: 24 }}>
-            {/* Currency Toggle */}
-            <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, position: "relative" }}>
-              <div style={{ position: "absolute", top: 4, bottom: 4, left: currency === "EUR" ? 4 : "50%", width: "calc(50% - 4px)", background: "#fff", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
-              <button onClick={() => setCurrency("EUR")} style={{ position: "relative", zIndex: 1, background: "transparent", color: currency === "EUR" ? "#111" : "#666", border: "none", borderRadius: 50, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", minWidth: 120 }}>
-                🇵🇹 EUR (€)
-              </button>
-              <button onClick={() => setCurrency("BRL")} style={{ position: "relative", zIndex: 1, background: "transparent", color: currency === "BRL" ? "#111" : "#666", border: "none", borderRadius: 50, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", minWidth: 120 }}>
-                🇧🇷 BRL (R$)
-              </button>
-            </div>
+
 
             {/* Billing Toggle */}
             <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, position: "relative" }}>
