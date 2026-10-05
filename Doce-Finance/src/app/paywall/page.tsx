@@ -5,7 +5,7 @@ import Link from "next/link"
 import { LogOut } from "lucide-react"
 
 export default async function PaywallPage() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,7 +26,7 @@ export default async function PaywallPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('subscription_status, trial_ends_at, currency_preference')
+    .select('subscription_status, trial_ends_at, currency_preference, currency')
     .eq('id', user.id)
     .single()
 
