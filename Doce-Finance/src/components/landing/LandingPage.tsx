@@ -102,25 +102,25 @@ export default function LandingPage({ isBrazil }: Props) {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         .nav-link { color: #444; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-        .nav-link:hover { color: #2D6A2F; }
-        .btn-primary { background: #2D6A2F; color: #fff; border: none; border-radius: 10px; padding: 14px 28px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary:hover { background: #1E4D20; transform: translateY(-1px); }
-        .btn-outline { background: transparent; color: #2D6A2F; border: 2px solid #2D6A2F; border-radius: 10px; padding: 12px 26px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-outline:hover { background: #2D6A2F; color: #fff; }
+        .nav-link:hover { color: #0F766E; }
+        .btn-primary { background: #0F766E; color: #fff; border: none; border-radius: 10px; padding: 14px 28px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: #052E2B; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #0F766E; border: 2px solid #0F766E; border-radius: 10px; padding: 12px 26px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-outline:hover { background: #0F766E; color: #fff; }
         .section { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
-        .badge { display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; color: #2D6A2F; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+        .badge { display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; color: #0F766E; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
         .screenshot-thumb { width: 80px; height: 52px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; opacity: 0.6; }
-        .screenshot-thumb.active { border-color: #2D6A2F; opacity: 1; }
+        .screenshot-thumb.active { border-color: #0F766E; opacity: 1; }
         .faq-item { border-bottom: 1px solid #E8E8E4; }
         .faq-btn { width: 100%; background: none; border: none; padding: 20px 0; text-align: left; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #1A1A1A; }
-        .tag { display: inline-block; background: #E8F5E9; color: #2D6A2F; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tag { display: inline-block; background: #ECFDF5; color: #0F766E; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         .float { animation: float 4s ease-in-out infinite; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        .feature-card:hover .feature-icon { transform: scale(1.1); background: #2D6A2F !important; }
+        .feature-card:hover .feature-icon { transform: scale(1.1); background: #0F766E !important; }
         .feature-card:hover .feature-icon svg { stroke: #fff !important; }
         .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out, padding 0.3s ease; }
         .faq-content.open { max-height: 200px; padding-bottom: 20px; }
@@ -136,7 +136,7 @@ export default function LandingPage({ isBrazil }: Props) {
       <nav style={{ background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(235, 235, 235, 0.5)", boxShadow: "0 4px 20px rgba(0,0,0,0.03)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#2D6A2F", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#0F766E", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ChefHat size={20} color="#fff" />
             </div>
             <span style={{ fontWeight: 800, fontSize: 18, color: "#1A1A1A" }}>Doce Finance</span>
@@ -149,9 +149,9 @@ export default function LandingPage({ isBrazil }: Props) {
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#444", textDecoration: "none" }}>Entrar</Link>
-            <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
+            <Link href="/login" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
               Começar agora
-            </a>
+            </Link>
           </div>
         </div>
       </nav>
@@ -166,16 +166,16 @@ export default function LandingPage({ isBrazil }: Props) {
             </div>
             <h1 style={{ fontSize: "clamp(36px,5vw,56px)", fontWeight: 900, lineHeight: 1.1, marginBottom: 20, color: "#111" }}>
               A gestão financeira<br />
-              <span style={{ color: "#2D6A2F" }}>feita para o seu</span><br />
+              <span style={{ color: "#0F766E" }}>feita para o seu</span><br />
               atelier de doces
             </h1>
             <p style={{ fontSize: 18, color: "#555", lineHeight: 1.7, marginBottom: 36, maxWidth: 480 }}>
               Calcule custos de receitas, gerencie pedidos, envie orçamentos profissionais com Pix e controle tudo do seu negócio — num só lugar.
             </p>
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-              <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
+              <Link href="/login" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
                 Começar agora <ArrowRight size={18} />
-              </a>
+              </Link>
               <a href="#screenshots" className="btn-outline" style={{ textDecoration: "none" }}>
                 Ver demonstração
               </a>
@@ -183,7 +183,7 @@ export default function LandingPage({ isBrazil }: Props) {
             <div style={{ display: "flex", gap: 24, marginTop: 40, flexWrap: "wrap" }}>
               {["Sem limite de receitas", "Cancele quando quiser", "Suporte em português"].map(t => (
                 <div key={t} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#555" }}>
-                  <CheckCircle2 size={15} color="#2D6A2F" />
+                  <CheckCircle2 size={15} color="#0F766E" />
                   {t}
                 </div>
               ))}
@@ -226,10 +226,10 @@ export default function LandingPage({ isBrazil }: Props) {
         <div className="feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
           {FEATURES.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="feature-card" style={{ background: "#fff", border: "1px solid #E8E8E4", borderRadius: 16, padding: 28, transition: "box-shadow 0.2s, transform 0.2s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(45,106,47,0.12)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(15,118,110,0.12)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)" }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.transform = "none" }}>
-              <div className="feature-icon" style={{ width: 48, height: 48, borderRadius: 12, background: "#E8F5E9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, transition: "all 0.3s ease" }}>
-                <Icon size={22} color="#2D6A2F" style={{ transition: "stroke 0.3s ease" }} />
+              <div className="feature-icon" style={{ width: 48, height: 48, borderRadius: 12, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, transition: "all 0.3s ease" }}>
+                <Icon size={22} color="#0F766E" style={{ transition: "stroke 0.3s ease" }} />
               </div>
               <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: "#111" }}>{title}</h3>
               <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>{desc}</p>
@@ -242,7 +242,7 @@ export default function LandingPage({ isBrazil }: Props) {
       <div style={{ background: "#111", padding: "80px 24px" }} id="screenshots">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <div className="badge" style={{ background: "rgba(255,255,255,0.1)", color: "#7FBA7A" }}><Star size={14} /> App em detalhe</div>
+            <div className="badge" style={{ background: "rgba(255,255,255,0.1)", color: "#34D399" }}><Star size={14} /> App em detalhe</div>
             <h2 style={{ fontSize: "clamp(28px,4vw,42px)", fontWeight: 800, color: "#fff", marginTop: 8 }}>
               Veja como funciona na prática
             </h2>
@@ -271,7 +271,7 @@ export default function LandingPage({ isBrazil }: Props) {
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             {SCREENSHOTS.map((s, i) => (
               <button key={i} onClick={() => setActiveScreenshot(i)}
-                style={{ background: i === activeScreenshot ? "rgba(45,106,47,0.3)" : "rgba(255,255,255,0.05)", border: i === activeScreenshot ? "2px solid #2D6A2F" : "2px solid transparent", borderRadius: 10, padding: "8px 16px", color: i === activeScreenshot ? "#7FBA7A" : "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
+                style={{ background: i === activeScreenshot ? "rgba(15,118,110,0.3)" : "rgba(255,255,255,0.05)", border: i === activeScreenshot ? "2px solid #0F766E" : "2px solid transparent", borderRadius: 10, padding: "8px 16px", color: i === activeScreenshot ? "#34D399" : "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
                 {s.label}
               </button>
             ))}
@@ -305,12 +305,12 @@ export default function LandingPage({ isBrazil }: Props) {
 
             {/* Billing Toggle */}
             <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, position: "relative" }}>
-              <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#2D6A2F", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
+              <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#0F766E", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
               {(["monthly", "yearly"] as const).map(b => (
                 <button key={b} onClick={() => setBilling(b)}
                   style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, minWidth: 130, justifyContent: "center" }}>
                   {b === "monthly" ? "Mensal" : "Anual"}
-                  {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#2D6A2F", color: billing === "yearly" ? "#fff" : "#fff", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>Economize até {p.saving}</span>}
+                  {b === "yearly" && <span style={{ background: billing === "yearly" ? "rgba(255,255,255,0.2)" : "#0F766E", color: billing === "yearly" ? "#fff" : "#fff", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>Economize até {p.saving}</span>}
                 </button>
               ))}
             </div>
@@ -319,8 +319,8 @@ export default function LandingPage({ isBrazil }: Props) {
 
         <div className="price-grid" style={{ display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
           {/* Card único */}
-          <div style={{ background: "#fff", border: "2px solid #2D6A2F", borderRadius: 24, padding: 40, maxWidth: 420, width: "100%", position: "relative", boxShadow: "0 16px 64px rgba(45,106,47,0.15)", transition: "all 0.3s ease" }}>
-            <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#2D6A2F", color: "#fff", borderRadius: 20, padding: "4px 18px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+          <div style={{ background: "#fff", border: "2px solid #0F766E", borderRadius: 24, padding: 40, maxWidth: 420, width: "100%", position: "relative", boxShadow: "0 16px 64px rgba(15,118,110,0.15)", transition: "all 0.3s ease" }}>
+            <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#0F766E", color: "#fff", borderRadius: 20, padding: "4px 18px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
               ✨ Acesso Completo
             </div>
             <div style={{ marginBottom: 24, marginTop: 8 }}>
@@ -348,16 +348,16 @@ export default function LandingPage({ isBrazil }: Props) {
                 "Suporte em português",
               ].map(f => (
                 <div key={f} style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <CheckCircle2 size={18} color="#2D6A2F" style={{ flexShrink: 0 }} />
+                  <CheckCircle2 size={18} color="#0F766E" style={{ flexShrink: 0 }} />
                   <span style={{ fontSize: 15, color: "#333" }}>{f}</span>
                 </div>
               ))}
             </div>
 
-            <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px", textDecoration: "none" }}>
+            <Link href="/login" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px", textDecoration: "none" }}>
               Assinar {billing === "monthly" ? "Mensal" : "Anual"}
               <ArrowRight size={18} />
-            </a>
+            </Link>
             <p style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 14 }}>
               Pagamento seguro via Stripe · Cancele quando quiser
             </p>
@@ -392,7 +392,7 @@ export default function LandingPage({ isBrazil }: Props) {
                 avatar: "https://i.pravatar.cc/150?u=beatriz"
               }
             ].map((t, i) => (
-              <div key={i} style={{ flex: "1 1 300px", maxWidth: 350, background: "#fff", padding: 28, borderRadius: 16, border: "1px solid #E0EFE0", display: "flex", flexDirection: "column" }}>
+              <div key={i} style={{ flex: "1 1 300px", maxWidth: 350, background: "#fff", padding: 28, borderRadius: 16, border: "1px solid #A7F3D0", display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
                   {[...Array(5)].map((_, idx) => <Star key={idx} size={16} color="#F4A800" fill="#F4A800" />)}
                 </div>
@@ -400,7 +400,7 @@ export default function LandingPage({ isBrazil }: Props) {
                   "{t.text}"
                 </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <img src={t.avatar} alt={t.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #E8F5E9" }} />
+                  <img src={t.avatar} alt={t.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #ECFDF5" }} />
                   <div>
                     <p style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{t.name}</p>
                     <p style={{ fontSize: 12, color: "#888" }}>{t.role}</p>
@@ -434,7 +434,7 @@ export default function LandingPage({ isBrazil }: Props) {
       </div>
 
       {/* ── CTA FINAL ── */}
-      <div style={{ background: "linear-gradient(135deg,#1E3A1F,#2D6A2F)", padding: "80px 24px", textAlign: "center" }}>
+      <div style={{ background: "linear-gradient(135deg,#052E2B,#0F766E)", padding: "80px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <ChefHat size={48} color="rgba(255,255,255,0.3)" style={{ margin: "0 auto 24px" }} />
           <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#fff", marginBottom: 16 }}>
@@ -444,9 +444,9 @@ export default function LandingPage({ isBrazil }: Props) {
             O seu atelier merece uma gestão profissional.<br />
             Junte-se às confeiteiras que já transformaram o negócio.
           </p>
-          <a href={billing === "monthly" ? STRIPE_LINKS.mensal : STRIPE_LINKS.anual} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ background: "#fff", color: "#2D6A2F", fontSize: 18, padding: "18px 40px", borderRadius: 14, textDecoration: "none" }}>
+          <Link href="/login" className="btn-primary" style={{ background: "#fff", color: "#0F766E", fontSize: 18, padding: "18px 40px", borderRadius: 14, textDecoration: "none" }}>
             Assinar agora <ArrowRight size={20} />
-          </a>
+          </Link>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 16 }}>
             A partir de {p.currency} {p.monthly}/mês · Sem compromisso
           </p>
@@ -457,7 +457,7 @@ export default function LandingPage({ isBrazil }: Props) {
       <div style={{ background: "#111", padding: "40px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#2D6A2F", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#0F766E", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ChefHat size={16} color="#fff" />
             </div>
             <span style={{ fontWeight: 700, color: "#fff", fontSize: 16 }}>Doce Finance</span>
