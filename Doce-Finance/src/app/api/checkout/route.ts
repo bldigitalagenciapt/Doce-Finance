@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { cookies } from 'next/headers'
+import { createServerClient } from '@supabase/ssr'
 
 export const runtime = 'nodejs'
 
@@ -20,6 +22,14 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Corpo da requisição inválido.' }, { status: 400 })
   }
+
+  const cookieStore = cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll() { return cookieStore.getAll() } } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { plan, currency } = body as { plan: unknown; currency: unknown }
 
@@ -60,6 +70,7 @@ export async function POST(req: NextRequest) {
       success_url: `${safeOrigin}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${safeOrigin}/#pricing`,
       allow_promotion_codes: true,
+      client_reference_id: user?.id,
     })
 
     return NextResponse.json({ url: session.url })
