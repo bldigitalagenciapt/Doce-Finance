@@ -33,8 +33,9 @@ export default async function PaywallPage() {
   const isExpired = profile?.trial_ends_at ? new Date(profile.trial_ends_at) < new Date() : false
   const isTrialing = profile?.subscription_status === 'trialing'
 
-  // Se já assinou, manda de volta pro dashboard
-  if (profile?.subscription_status === 'active' || (!isExpired && isTrialing)) {
+  // Se já tem assinatura ativa, manda de volta pro dashboard
+  // Não redirecionamos quem está em trial para que eles possam assinar antecipadamente
+  if (profile?.subscription_status === 'active') {
     redirect("/dashboard")
   }
 
@@ -64,9 +65,13 @@ export default async function PaywallPage() {
           </svg>
         </div>
         
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">O seu período de avaliação chegou ao fim.</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          {isExpired ? 'O seu período de avaliação chegou ao fim.' : 'Assine para continuar aproveitando!'}
+        </h1>
         <p className="text-gray-600 mb-8 max-w-xl mx-auto">
-          O seu período de avaliação de 15 dias terminou. As suas receitas e custos continuam salvos com segurança. Escolha um plano abaixo para reativar seu acesso.
+          {isExpired 
+            ? 'O seu período de avaliação de 15 dias terminou. As suas receitas e custos continuam salvos com segurança. Escolha um plano abaixo para reativar seu acesso.'
+            : 'Garanta o seu acesso sem interrupções. Escolha o melhor plano abaixo para o seu atelier e profissionalize suas vendas.'}
         </p>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">

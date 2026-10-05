@@ -32,7 +32,7 @@ export function TrialBanner() {
           Você tem {diffDays} {diffDays === 1 ? 'dia restante' : 'dias restantes'} de teste grátis.
         </p>
         <Link
-          href="/configuracoes?tab=assinatura"
+          href="/paywall"
           className="flex-none rounded-full bg-white px-3.5 py-1 text-sm font-semibold text-brand-600 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           Assinar Agora <span aria-hidden="true">&rarr;</span>
