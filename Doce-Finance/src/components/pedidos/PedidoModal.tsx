@@ -137,20 +137,30 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
     setItems(next)
   }
 
-  const handleSave = async () => {
-    if (items.length === 0) return toast.error('Adicione ao menos um item.')
-    if (items.some((it) => !it.name.trim()))
-      return toast.error('Informe o nome de todos os itens.')
+import { z } from 'zod'
 
+const itemSchema = z.object({
+  recipe_id: z.string().nullable().optional(),
+  name: z.string().min(1, 'O nome do item é obrigatório').max(200, 'Nome do item deve ter até 200 caracteres'),
+  quantity: z.number().positive('A quantidade deve ser maior que zero'),
+  unit_price: z.number().min(0, 'O preço não pode ser negativo'),
+})
+
+const orderSchema = z.object({
+  client_id: z.string().nullable().optional(),
+  status: z.string(),
+  delivery_date: z.string().nullable().optional(),
+  delivery_time: z.string().nullable().optional(),
+  discount: z.number().min(0, 'O desconto não pode ser negativo'),
+  delivery_fee: z.number().min(0, 'A taxa de entrega não pode ser negativa'),
+  notes: z.string().max(2000, 'As observações devem ter até 2000 caracteres').nullable().optional(),
+  items: z.array(itemSchema).min(1, 'Adicione ao menos um item válido')
+})
+
+  const handleSave = async () => {
     setSaving(true)
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error('Sessão expirada.')
-
-      const orderPayload = {
-        user_id: user.id,
+      const orderPayloadData = {
         client_id: form.client_id || null,
         status: form.status,
         delivery_date: form.delivery_date || null,
@@ -158,7 +168,26 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
         discount,
         delivery_fee: deliveryFee,
         notes: form.notes || null,
+        items: items.map(it => ({
+          recipe_id: it.recipe_id || null,
+          name: it.name.trim(),
+          quantity: parseFloat(it.quantity) || 0,
+          unit_price: parseFloat(it.unit_price) || 0,
+        }))
       }
+
+      // Zod Validation
+      const parsed = orderSchema.safeParse(orderPayloadData)
+      if (!parsed.success) {
+        const error = parsed.error.errors[0]
+        return toast.error(error.message)
+      }
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Sessão expirada.')
+
+      const { items: validatedItems, ...validatedOrder } = parsed.data
+      const orderPayload = { ...validatedOrder, user_id: user.id }
 
       let oid = editing?.id
       if (oid) {
@@ -175,15 +204,10 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
         oid = data.id
       }
 
-      const itemsPayload = items
-        .filter((it) => it.name.trim())
-        .map((it) => ({
-          order_id: oid,
-          recipe_id: it.recipe_id || null,
-          name: it.name.trim(),
-          quantity: parseFloat(it.quantity) || 1,
-          unit_price: parseFloat(it.unit_price) || 0,
-        }))
+      const itemsPayload = validatedItems.map(it => ({
+        ...it,
+        order_id: oid
+      }))
 
       const { error: itErr } = await supabase.from('order_items').insert(itemsPayload)
       if (itErr) throw itErr

@@ -74,9 +74,12 @@ export async function updateSession(request: NextRequest) {
 
     if (profile) {
       const isTrialing = profile.subscription_status === 'trialing'
-      const isExpired = profile.trial_ends_at ? new Date(profile.trial_ends_at) < new Date() : false
+      const isTrialExpired = profile.trial_ends_at ? new Date(profile.trial_ends_at) < new Date() : false
+      const isActive = profile.subscription_status === 'active'
 
-      if (isTrialing && isExpired) {
+      const hasAccess = isActive || (isTrialing && !isTrialExpired)
+
+      if (!hasAccess) {
         const url = request.nextUrl.clone()
         url.pathname = "/paywall"
         return NextResponse.redirect(url)

@@ -30,6 +30,24 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
+    // Idempotência: Verifica se o evento já foi processado
+    const { data: existingEvent } = await supabaseAdmin
+      .from('stripe_events')
+      .select('id')
+      .eq('id', event.id)
+      .single()
+
+    if (existingEvent) {
+      console.log(`⚠️ Evento ${event.id} já processado. Ignorando...`)
+      return NextResponse.json({ received: true })
+    }
+
+    // Registra o evento para não ser processado novamente
+    await supabaseAdmin.from('stripe_events').insert({
+      id: event.id,
+      type: event.type
+    })
+
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
 

@@ -140,6 +140,17 @@ export async function GET(
 
   if (profile.logo_url) {
     try {
+      const urlObj = new URL(profile.logo_url)
+      
+      // Proteção SSRF: Apenas HTTPS e bloqueio de IPs locais/metadados
+      const isHttps = urlObj.protocol === 'https:'
+      const isLocalOrInternal = ['localhost', '127.0.0.1', '169.254.169.254', '::1'].includes(urlObj.hostname)
+      const isSupabase = urlObj.hostname.endsWith('supabase.co') || urlObj.hostname.endsWith('supabase.in')
+      
+      if (!isHttps || isLocalOrInternal || !isSupabase) {
+        throw new Error('URL da logo inválida ou não permitida (SSRF protection)')
+      }
+
       const res = await fetch(profile.logo_url)
       if (res.ok) {
         const buffer = await res.arrayBuffer()
