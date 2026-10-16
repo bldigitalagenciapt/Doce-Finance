@@ -1,97 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import type Stripe from 'stripe'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getStripe, syncSubscriptionToProfile } from '@/lib/stripe'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2026-08-26.dahlia' as any
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const HANDLED_EVENTS = new Set<Stripe.Event.Type>([
+  'checkout.session.completed',
+  'checkout.session.async_payment_succeeded',
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+  'customer.subscription.paused',
+  'customer.subscription.resumed',
+])
 
 export async function POST(req: NextRequest) {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret || !process.env.STRIPE_SECRET_KEY) {
+    console.error('[webhook] STRIPE_WEBHOOK_SECRET/STRIPE_SECRET_KEY ausentes')
+    return NextResponse.json({ error: 'Webhook não configurado' }, { status: 500 })
+  }
+
+  const signature = req.headers.get('stripe-signature')
+  if (!signature) {
+    return NextResponse.json({ error: 'Assinatura ausente' }, { status: 400 })
+  }
+
+  const stripe = getStripe()
+  const body = await req.text()
+
+  let event: Stripe.Event
   try {
-    const body = await req.text()
-    const signature = req.headers.get('stripe-signature') as string
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+  } catch (err: unknown) {
+    console.error('[webhook] Assinatura inválida:', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'Assinatura inválida' }, { status: 400 })
+  }
 
-    let event: Stripe.Event
+  if (!HANDLED_EVENTS.has(event.type)) {
+    return NextResponse.json({ received: true, ignored: event.type })
+  }
 
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    } catch (err: any) {
-      console.error(`⚠️ Erro na assinatura do Webhook.`, err.message)
-      return NextResponse.json({ error: err.message }, { status: 400 })
-    }
+  const admin = createAdminClient()
 
-    // Acessa o Supabase com chave de admin (Service Role) para poder editar o perfil com segurança
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-
-    // Idempotência: Verifica se o evento já foi processado
-    const { data: existingEvent } = await supabaseAdmin
+  try {
+    // Idempotência: ignora eventos já processados com sucesso
+    const { data: existing } = await admin
       .from('stripe_events')
       .select('id')
       .eq('id', event.id)
-      .single()
+      .maybeSingle()
+    if (existing) return NextResponse.json({ received: true, duplicate: true })
 
-    if (existingEvent) {
-      console.log(`⚠️ Evento ${event.id} já processado. Ignorando...`)
-      return NextResponse.json({ received: true })
-    }
+    switch (event.type) {
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded': {
+        const session = event.data.object as Stripe.Checkout.Session
+        if (session.mode !== 'subscription' || !session.subscription) break
+        // Pagamentos assíncronos só liberam acesso quando confirmados
+        if (session.payment_status === 'unpaid') break
 
-    // Registra o evento para não ser processado novamente
-    await supabaseAdmin.from('stripe_events').insert({
-      id: event.id,
-      type: event.type
-    })
+        const subscriptionId =
+          typeof session.subscription === 'string' ? session.subscription : session.subscription.id
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        const userId = session.client_reference_id || session.metadata?.user_id || null
+        await syncSubscriptionToProfile(admin, subscription, userId)
+        break
+      }
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session
-
-      // Pega o ID do usuário que enviamos na hora do checkout
-      const userId = session.client_reference_id
-
-      if (userId) {
-        console.log(`✅ Pagamento confirmado para o usuário ${userId}. Atualizando status...`)
-        
-        // Atualiza o perfil do usuário para ativo
-        const { error } = await supabaseAdmin
-          .from('profiles')
-          .update({
-            subscription_status: 'active',
-            stripe_customer_id: session.customer as string
-          })
-          .eq('id', userId)
-
-        if (error) {
-          console.error('Erro ao atualizar Supabase:', error)
-          return NextResponse.json({ error: 'Erro ao atualizar banco de dados' }, { status: 500 })
-        }
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted':
+      case 'customer.subscription.paused':
+      case 'customer.subscription.resumed': {
+        const subscription = event.data.object as Stripe.Subscription
+        await syncSubscriptionToProfile(admin, subscription)
+        break
       }
     }
 
-    if (event.type === 'customer.subscription.deleted') {
-      const subscription = event.data.object as Stripe.Subscription
-      
-      // Quando a assinatura for cancelada/deletada, voltar o status
-      const { error } = await supabaseAdmin
-        .from('profiles')
-        .update({
-          subscription_status: 'canceled'
-        })
-        .eq('stripe_customer_id', subscription.customer as string)
-
-      if (error) {
-        console.error('Erro ao cancelar assinatura no Supabase:', error)
-      }
+    // Marca como processado SOMENTE após sucesso — se falhar, o Stripe reenvia
+    const { error: insertErr } = await admin
+      .from('stripe_events')
+      .insert({ id: event.id, type: event.type })
+    if (insertErr && insertErr.code !== '23505') {
+      console.error('[webhook] Falha ao registrar evento:', insertErr)
     }
 
     return NextResponse.json({ received: true })
-  } catch (err: any) {
-    console.error('Erro geral no webhook:', err)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  } catch (err: unknown) {
+    console.error(`[webhook] Erro ao processar ${event.type} (${event.id}):`, err)
+    // 500 faz o Stripe tentar novamente (retentativas por até 3 dias)
+    return NextResponse.json({ error: 'Erro ao processar evento' }, { status: 500 })
   }
 }

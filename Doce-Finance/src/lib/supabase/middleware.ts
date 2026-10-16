@@ -75,7 +75,8 @@ export async function updateSession(request: NextRequest) {
     if (profile) {
       const isTrialing = profile.subscription_status === 'trialing'
       const isTrialExpired = profile.trial_ends_at ? new Date(profile.trial_ends_at) < new Date() : false
-      const isActive = profile.subscription_status === 'active'
+      // past_due mantém acesso durante as retentativas do Stripe (igual a has_active_access no banco)
+      const isActive = profile.subscription_status === 'active' || profile.subscription_status === 'past_due'
 
       const hasAccess = isActive || (isTrialing && !isTrialExpired)
 

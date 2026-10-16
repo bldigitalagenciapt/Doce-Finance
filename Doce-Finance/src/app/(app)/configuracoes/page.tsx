@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils'
 import type { Currency, PixKeyType, Profile } from '@/types/database'
+import { SubscriptionSection } from '@/components/configuracoes/SubscriptionSection'
 
 export default function ConfiguracoesPage() {
   const supabase = useSupabase()
@@ -124,6 +125,7 @@ export default function ConfiguracoesPage() {
     if (!user) { toast.error('Sessão expirada.'); return null }
     return user
   }
+
 
   const handleSaveProfile = async () => {
     const user = await getUser(); if (!user) return
@@ -725,6 +727,9 @@ export default function ConfiguracoesPage() {
             </Button>
           </div>
         </div>
+
+        {/* ── Assinatura e Faturamento (com cancelamento facilitado e portal) ── */}
+        <SubscriptionSection profile={profile} />
       </div>
     </div>
   )

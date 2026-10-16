@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    cpus: 2,
+  },
   // Remova 'allowedDevOrigins: ["*"]' — wildcard expõe a app em dev
   // allowedDevOrigins: ['localhost', '127.0.0.1'],
 

@@ -24,6 +24,11 @@ export function CheckoutButton({ plan, currency, label }: CheckoutButtonProps) {
       })
       const data = await res.json()
 
+      if (res.status === 401) {
+        router.push('/login')
+        return
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Erro ao processar assinatura')
       }

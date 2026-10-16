@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import {
+  VALID_PLANS,
+  VALID_CURRENCIES,
+  type Plan,
+  type BillingCurrency,
+  getStripe,
+  getPriceId,
+  getSafeOrigin,
+} from '@/lib/stripe'
 
 export const runtime = 'nodejs'
-
-const VALID_PLANS = ['monthly', 'yearly'] as const
-const VALID_CURRENCIES = ['BRL', 'EUR'] as const
-
-const PRICES: Record<string, string | undefined> = {
-  BRL_monthly: process.env.STRIPE_PRICE_BRL_MONTHLY,
-  BRL_yearly:  process.env.STRIPE_PRICE_BRL_YEARLY,
-  EUR_monthly: process.env.STRIPE_PRICE_EUR_MONTHLY,
-  EUR_yearly:  process.env.STRIPE_PRICE_EUR_YEARLY,
-}
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -31,53 +29,74 @@ export async function POST(req: NextRequest) {
   )
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Sem usuário não há como vincular o pagamento à conta → exige login
+  if (!user) {
+    return NextResponse.json({ url: '/login' }, { status: 401 })
+  }
+
   const { plan, currency } = body as { plan: unknown; currency: unknown }
 
   // Validação explícita de input — evita manipulação de parâmetros
-  if (!VALID_PLANS.includes(plan as typeof VALID_PLANS[number])) {
+  if (!VALID_PLANS.includes(plan as Plan)) {
     return NextResponse.json({ error: 'Plano inválido.' }, { status: 400 })
   }
-  if (!VALID_CURRENCIES.includes(currency as typeof VALID_CURRENCIES[number])) {
+  if (!VALID_CURRENCIES.includes(currency as BillingCurrency)) {
     return NextResponse.json({ error: 'Moeda inválida.' }, { status: 400 })
   }
 
-  const priceId = PRICES[`${currency}_${plan}`]
-  const stripeKey = process.env.STRIPE_SECRET_KEY
-
-  if (!stripeKey || !priceId) {
-    // Stripe ainda nao configurado — redirecionar para cadastro
-    return NextResponse.json({ url: '/login' })
+  const priceId = getPriceId(currency as BillingCurrency, plan as Plan)
+  if (!process.env.STRIPE_SECRET_KEY || !priceId) {
+    console.error(`[checkout] Stripe não configurado para ${currency}_${plan}`)
+    return NextResponse.json(
+      { error: 'Pagamentos temporariamente indisponíveis. Tente novamente em instantes.' },
+      { status: 503 },
+    )
   }
 
-  // Valida a origem da requisição para prevenir CSRF
-  const origin = req.headers.get('origin')
-  const allowedOrigins = [
-    process.env.NEXT_PUBLIC_APP_URL,
-    'https://doce-finance.vercel.app',
-    'http://localhost:3000',
-  ].filter(Boolean)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('subscription_status, stripe_customer_id')
+    .eq('id', user.id)
+    .single()
 
-  const safeOrigin = origin && allowedOrigins.includes(origin)
-    ? origin
-    : (process.env.NEXT_PUBLIC_APP_URL || 'https://doce-finance.vercel.app')
+  // Evita assinatura duplicada (cobrança dupla)
+  if (profile?.subscription_status === 'active' || profile?.subscription_status === 'past_due') {
+    return NextResponse.json(
+      { error: 'Você já possui uma assinatura. Gerencie-a em Configurações.' },
+      { status: 409 },
+    )
+  }
+
+  const safeOrigin = getSafeOrigin(req.headers.get('origin'))
 
   try {
-    const stripe = new Stripe(stripeKey, { apiVersion: '2026-08-26.dahlia' as any })
+    const stripe = getStripe()
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${safeOrigin}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${safeOrigin}/#pricing`,
+      cancel_url: `${safeOrigin}/paywall`,
       allow_promotion_codes: true,
-      client_reference_id: user?.id,
+      billing_address_collection: 'auto',
+      client_reference_id: user.id,
+      // Reaproveita o cliente Stripe existente (evita clientes duplicados)
+      ...(profile?.stripe_customer_id
+        ? { customer: profile.stripe_customer_id, customer_update: { address: 'auto', name: 'auto' } }
+        : { customer_email: user.email }),
+      // Metadados na assinatura para o webhook achar o usuário em renovações/cancelamentos
+      subscription_data: { metadata: { user_id: user.id } },
+      metadata: { user_id: user.id },
+      locale: currency === 'BRL' ? 'pt-BR' : 'pt',
     })
 
     return NextResponse.json({ url: session.url })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erro interno.'
+    // Não expõe mensagens internas do Stripe ao cliente
     console.error('[checkout]', err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Não foi possível iniciar o pagamento. Tente novamente.' },
+      { status: 500 },
+    )
   }
 }
-

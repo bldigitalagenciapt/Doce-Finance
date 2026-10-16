@@ -35,26 +35,13 @@ export default async function PaywallPage() {
 
   // Se já tem assinatura ativa, manda de volta pro dashboard
   // Não redirecionamos quem está em trial para que eles possam assinar antecipadamente
-  if (profile?.subscription_status === 'active') {
+  if (profile?.subscription_status === 'active' || profile?.subscription_status === 'past_due') {
     redirect("/dashboard")
   }
 
-  // Define URLs do Stripe (estas seriam configuradas em .env na vida real)
-  const STRIPE_LINKS = {
-    EUR: {
-      mensal: process.env.NEXT_PUBLIC_STRIPE_EUR_MENSAL || '#',
-      anual: process.env.NEXT_PUBLIC_STRIPE_EUR_ANUAL || '#'
-    },
-    BRL: {
-      mensal: process.env.NEXT_PUBLIC_STRIPE_BRL_MENSAL || '#',
-      anual: process.env.NEXT_PUBLIC_STRIPE_BRL_ANUAL || '#'
-    }
-  }
-
-  const userCurrency = profile?.currency || 'EUR'
+  const rawCurrency = profile?.currency || profile?.currency_preference
+  const userCurrency: 'EUR' | 'BRL' = rawCurrency === 'BRL' ? 'BRL' : 'EUR'
   const isBRL = userCurrency === 'BRL'
-
-  const currentStripeLinks = STRIPE_LINKS[userCurrency as 'EUR' | 'BRL'] || STRIPE_LINKS.EUR
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">

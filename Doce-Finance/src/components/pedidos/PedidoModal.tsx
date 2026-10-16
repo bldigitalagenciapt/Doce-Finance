@@ -10,6 +10,25 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { useCurrency } from '@/hooks/useCurrency'
 import { ORDER_STATUS_LIST } from '@/lib/orderStatus'
 import type { Client, Order, OrderStatus, Recipe } from '@/types/database'
+import { z } from 'zod'
+
+const itemSchema = z.object({
+  recipe_id: z.string().nullable().optional(),
+  name: z.string().min(1, 'O nome do item é obrigatório').max(200, 'Nome do item deve ter até 200 caracteres'),
+  quantity: z.number().positive('A quantidade deve ser maior que zero'),
+  unit_price: z.number().min(0, 'O preço não pode ser negativo'),
+})
+
+const orderSchema = z.object({
+  client_id: z.string().nullable().optional(),
+  status: z.string(),
+  delivery_date: z.string().nullable().optional(),
+  delivery_time: z.string().nullable().optional(),
+  discount: z.number().min(0, 'O desconto não pode ser negativo'),
+  delivery_fee: z.number().min(0, 'A taxa de entrega não pode ser negativa'),
+  notes: z.string().max(2000, 'As observações devem ter até 2000 caracteres').nullable().optional(),
+  items: z.array(itemSchema).min(1, 'Adicione ao menos um item válido')
+})
 
 interface ItemRow {
   recipe_id: string
@@ -137,26 +156,6 @@ export function PedidoModal({ open, onClose, onSaved, editing }: Props) {
     setItems(next)
   }
 
-import { z } from 'zod'
-
-const itemSchema = z.object({
-  recipe_id: z.string().nullable().optional(),
-  name: z.string().min(1, 'O nome do item é obrigatório').max(200, 'Nome do item deve ter até 200 caracteres'),
-  quantity: z.number().positive('A quantidade deve ser maior que zero'),
-  unit_price: z.number().min(0, 'O preço não pode ser negativo'),
-})
-
-const orderSchema = z.object({
-  client_id: z.string().nullable().optional(),
-  status: z.string(),
-  delivery_date: z.string().nullable().optional(),
-  delivery_time: z.string().nullable().optional(),
-  discount: z.number().min(0, 'O desconto não pode ser negativo'),
-  delivery_fee: z.number().min(0, 'A taxa de entrega não pode ser negativa'),
-  notes: z.string().max(2000, 'As observações devem ter até 2000 caracteres').nullable().optional(),
-  items: z.array(itemSchema).min(1, 'Adicione ao menos um item válido')
-})
-
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -179,7 +178,7 @@ const orderSchema = z.object({
       // Zod Validation
       const parsed = orderSchema.safeParse(orderPayloadData)
       if (!parsed.success) {
-        const error = parsed.error.errors[0]
+        const error = parsed.error.issues[0]
         return toast.error(error.message)
       }
 

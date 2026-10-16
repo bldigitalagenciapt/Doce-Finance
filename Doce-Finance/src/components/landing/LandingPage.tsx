@@ -13,11 +13,6 @@ import {
 
 interface Props { isBrazil: boolean }
 
-const STRIPE_LINKS = {
-  mensal: "https://buy.stripe.com/test_14AfZh8Pi9Vs02Z6P94Ni00",
-  anual: "https://buy.stripe.com/test_aFa4gz1mQ5FcbLH8Xh4Ni01"
-};
-
 const PRICING = {
   BRL: { monthly: "14,90", yearly: "149,90", currency: "R$", saving: "17%", yearlySub: "~12,49 / mês" },
   EUR: { monthly: "6,90", yearly: "69,90", currency: "€", saving: "17%", yearlySub: "~5,82 / mês" },
@@ -453,8 +448,10 @@ export default function LandingPage({ isBrazil }: Props) {
             </div>
             <span style={{ fontWeight: 700, color: "#fff", fontSize: 16 }}>Doce Finance</span>
           </div>
-          <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
             <Link href="/login" style={{ color: "#888", fontSize: 14, textDecoration: "none" }}>Entrar</Link>
+            <Link href="/termos" style={{ color: "#888", fontSize: 14, textDecoration: "none" }}>Termos</Link>
+            <Link href="/privacidade" style={{ color: "#888", fontSize: 14, textDecoration: "none" }}>Privacidade</Link>
             <a href="mailto:suporte@docefinance.app" style={{ color: "#888", fontSize: 14, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
               <Mail size={14} /> Suporte
             </a>
