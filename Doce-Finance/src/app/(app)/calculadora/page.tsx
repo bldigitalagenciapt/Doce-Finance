@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Calculator } from 'lucide-react'
+import Link from 'next/link'
+import { Calculator, Scale, ArrowRight } from 'lucide-react'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useCurrency } from '@/hooks/useCurrency'
 import { Select, Input } from '@/components/ui/Input'
@@ -195,6 +196,30 @@ export default function CalculadoraPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Banner Atalho para Tabela de Medidas */}
+      <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-brand-200 bg-gradient-to-r from-brand-50/60 via-white to-brand-50/30 p-5 shadow-card sm:flex-row sm:items-center">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-white shadow-sm">
+            <Scale className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">
+              Tabela de Medidas & Conversões (Xícaras ➔ Gramas)
+            </h3>
+            <p className="text-xs text-gray-500">
+              Precisa converter medidas caseiras para precificar com precisão? Consulte nossa tabela completa de conversão culinária.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/medidas"
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-brand-800"
+        >
+          <span>Abrir Tabela de Medidas</span>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </div>
   )

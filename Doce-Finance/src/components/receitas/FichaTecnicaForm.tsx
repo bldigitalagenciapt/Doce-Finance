@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, Search, Save, Pencil } from 'lucide-react'
+import { Plus, Trash2, Search, Save, Pencil, Scale } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useCurrency } from '@/hooks/useCurrency'
@@ -10,6 +10,7 @@ import { useAppStore } from '@/store/useAppStore'
 import { Input, Select, Textarea } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/Spinner'
+import { ConversorModal } from '@/components/medidas/ConversorModal'
 import type { Ingredient, Recipe, YieldUnit } from '@/types/database'
 
 const CATEGORIES = ['Bolo', 'Torta', 'Doce', 'Salgado', 'Cupcake', 'Sobremesa', 'Outros']
@@ -45,12 +46,13 @@ interface RecipeBlockProps {
   onRemoveBlock: (id: string) => void
   onRemoveRow: (blockId: string, ingredientId: string) => void
   onQuantityChange: (blockId: string, ingredientId: string, qty: string) => void
+  onOpenConverter?: (blockId: string, ingredientId: string, ingredientName?: string) => void
 }
 
 function RecipeBlock({
   block, rows, ingredients, searchValue, format,
   onSearchChange, onAddRow, onRenameBlock, onBlurBlock,
-  onRemoveBlock, onRemoveRow, onQuantityChange,
+  onRemoveBlock, onRemoveRow, onQuantityChange, onOpenConverter,
 }: RecipeBlockProps) {
   const s = searchValue.toLowerCase()
   const avail = ingredients.filter(
@@ -147,8 +149,8 @@ function RecipeBlock({
                     {format(ing?.cost_per_unit || 0)}/{ing?.unit}
                   </p>
                 </div>
-                <div className="w-28">
-                  <div className="relative">
+                <div className="w-28 flex items-center gap-1.5">
+                  <div className="relative flex-1">
                     <input
                       type="number"
                       min="0"
@@ -166,6 +168,16 @@ function RecipeBlock({
                       {ing?.unit}
                     </span>
                   </div>
+                  {onOpenConverter && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenConverter(block.id, r.ingredient_id, ing?.name)}
+                      title="Converter medida caseira (xícara, colher ➔ gramas)"
+                      className="rounded-lg p-1.5 text-brand-700 hover:bg-brand-50 transition-colors"
+                    >
+                      <Scale className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 <div className="w-20 text-right text-sm font-semibold text-gray-900">
                   {format(cost)}
@@ -201,6 +213,12 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
     { id: Math.random().toString(36).slice(2), name: 'Nova Etapa' },
   ])
   const [searches, setSearches] = useState<Record<string, string>>({})
+  const [converterTarget, setConverterTarget] = useState<{
+    blockId: string
+    ingredientId: string
+    ingredientName?: string
+  } | null>(null)
+  const [converterGeneralOpen, setConverterGeneralOpen] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -481,12 +499,23 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
 
         {/* Ingredientes */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-card">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-base font-semibold text-gray-900">Etapas do Preparo</h2>
-            <Button variant="outline" size="sm" onClick={addBlock}>
-              <Plus className="h-4 w-4" />
-              Nova Etapa
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConverterGeneralOpen(true)}
+                className="flex items-center gap-1.5 text-xs text-brand-700 border-brand-200 hover:bg-brand-50"
+              >
+                <Scale className="h-4 w-4" />
+                Conversor de Medidas
+              </Button>
+              <Button variant="outline" size="sm" onClick={addBlock}>
+                <Plus className="h-4 w-4" />
+                Nova Etapa
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -512,6 +541,9 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
                   onRemoveBlock={removeBlock}
                   onRemoveRow={handleRemoveRow}
                   onQuantityChange={handleQuantityChange}
+                  onOpenConverter={(blockId, ingredientId, name) =>
+                    setConverterTarget({ blockId, ingredientId, ingredientName: name })
+                  }
                 />
               )
             })}
@@ -643,6 +675,26 @@ export function FichaTecnicaForm({ recipeId }: { recipeId?: string }) {
           </Button>
         </div>
       </div>
+
+      {/* Modal de Conversão Rápida */}
+      <ConversorModal
+        open={!!converterTarget || converterGeneralOpen}
+        onClose={() => {
+          setConverterTarget(null)
+          setConverterGeneralOpen(false)
+        }}
+        initialIngredientName={converterTarget?.ingredientName}
+        onApplyValue={(val) => {
+          if (converterTarget) {
+            handleQuantityChange(
+              converterTarget.blockId,
+              converterTarget.ingredientId,
+              String(val),
+            )
+            toast.success(`Convertido para ${val} com sucesso!`)
+          }
+        }}
+      />
     </div>
   )
 }

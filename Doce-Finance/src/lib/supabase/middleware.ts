@@ -10,6 +10,7 @@ const PROTECTED_PREFIXES = [
   "/ingredientes",
   "/agenda",
   "/calculadora",
+  "/medidas",
   "/configuracoes",
   "/paywall",
 ]

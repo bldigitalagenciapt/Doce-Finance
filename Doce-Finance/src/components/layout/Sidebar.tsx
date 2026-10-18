@@ -13,6 +13,7 @@ import {
   Calendar,
   Settings,
   ChefHat,
+  Scale,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/useAppStore'
@@ -21,6 +22,7 @@ const nav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ingredientes', label: 'Ingredientes', icon: Package },
   { href: '/receitas', label: 'Receitas', icon: BookOpen },
+  { href: '/medidas', label: 'Medidas', icon: Scale },
   { href: '/calculadora', label: 'Calculadora', icon: Calculator },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/pedidos', label: 'Pedidos', icon: ShoppingBag },

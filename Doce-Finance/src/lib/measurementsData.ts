@@ -1,0 +1,552 @@
+export interface MeasurementRow {
+  id: string
+  quantidade: string
+  conversao: string // ex: XÍCARA, COLHER SOPA, COLHER CHÁ, UNIDADE
+  ingrediente: string
+  tipo: string
+  gramasMl: number
+  unidadeMedida: 'g' | 'ml'
+  isCustom?: boolean
+}
+
+export const DEFAULT_MEASUREMENTS: MeasurementRow[] = [
+  // Açúcar Normal
+  {
+    id: 'acucar-normal-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'NORMAL',
+    gramasMl: 180,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-normal-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'NORMAL',
+    gramasMl: 90,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-normal-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'NORMAL',
+    gramasMl: 60,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-normal-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'NORMAL',
+    gramasMl: 45,
+    unidadeMedida: 'g',
+  },
+  // Açúcar Confeiteiro
+  {
+    id: 'acucar-conf-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'CONFEITEIRO',
+    gramasMl: 140,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-conf-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'CONFEITEIRO',
+    gramasMl: 70,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-conf-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'CONFEITEIRO',
+    gramasMl: 47,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-conf-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'CONFEITEIRO',
+    gramasMl: 35,
+    unidadeMedida: 'g',
+  },
+  // Açúcar Colheres
+  {
+    id: 'acucar-normal-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'NORMAL',
+    gramasMl: 12,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-normal-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'NORMAL',
+    gramasMl: 4,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-conf-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'CONFEITEIRO',
+    gramasMl: 8,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'acucar-conf-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'AÇÚCAR',
+    tipo: 'CONFEITEIRO',
+    gramasMl: 2.5,
+    unidadeMedida: 'g',
+  },
+
+  // Chocolate em Pó
+  {
+    id: 'choc-po-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'CHOCOLATE EM PÓ',
+    tipo: 'PÓ',
+    gramasMl: 90,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-po-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'CHOCOLATE EM PÓ',
+    tipo: 'PÓ',
+    gramasMl: 45,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-po-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'CHOCOLATE EM PÓ',
+    tipo: 'PÓ',
+    gramasMl: 30,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-po-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'CHOCOLATE EM PÓ',
+    tipo: 'PÓ',
+    gramasMl: 20,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-po-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'CHOCOLATE EM PÓ',
+    tipo: 'PÓ',
+    gramasMl: 6,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-po-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'CHOCOLATE EM PÓ',
+    tipo: 'PÓ',
+    gramasMl: 2,
+    unidadeMedida: 'g',
+  },
+
+  // Chocolate Granulado
+  {
+    id: 'choc-gran-unidade',
+    quantidade: '1',
+    conversao: 'UNIDADE',
+    ingrediente: 'CHOCOLATE GRANULADO',
+    tipo: 'GRÃO',
+    gramasMl: 50,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-gran-xicara',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'CHOCOLATE GRANULADO',
+    tipo: 'GRÃO',
+    gramasMl: 150,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'choc-gran-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'CHOCOLATE GRANULADO',
+    tipo: 'GRÃO',
+    gramasMl: 15,
+    unidadeMedida: 'g',
+  },
+
+  // Farinha de Trigo
+  {
+    id: 'farinha-trigo-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'FARINHA',
+    tipo: 'TRIGO',
+    gramasMl: 120,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'farinha-trigo-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'FARINHA',
+    tipo: 'TRIGO',
+    gramasMl: 60,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'farinha-trigo-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'FARINHA',
+    tipo: 'TRIGO',
+    gramasMl: 40,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'farinha-trigo-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'FARINHA',
+    tipo: 'TRIGO',
+    gramasMl: 30,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'farinha-trigo-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'FARINHA',
+    tipo: 'TRIGO',
+    gramasMl: 7.5,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'farinha-trigo-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'FARINHA',
+    tipo: 'TRIGO',
+    gramasMl: 2.5,
+    unidadeMedida: 'g',
+  },
+
+  // Manteiga
+  {
+    id: 'manteiga-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'MANTEIGA',
+    tipo: 'MANTEIGA',
+    gramasMl: 200,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'manteiga-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'MANTEIGA',
+    tipo: 'MANTEIGA',
+    gramasMl: 100,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'manteiga-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'MANTEIGA',
+    tipo: 'MANTEIGA',
+    gramasMl: 65,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'manteiga-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'MANTEIGA',
+    tipo: 'MANTEIGA',
+    gramasMl: 50,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'manteiga-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'MANTEIGA',
+    tipo: 'MANTEIGA',
+    gramasMl: 15,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'manteiga-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'MANTEIGA',
+    tipo: 'MANTEIGA',
+    gramasMl: 5,
+    unidadeMedida: 'g',
+  },
+
+  // Líquidos
+  {
+    id: 'liquidos-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'LIQUIDOS',
+    tipo: 'LIQUIDOS',
+    gramasMl: 240,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'liquidos-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'LIQUIDOS',
+    tipo: 'LIQUIDOS',
+    gramasMl: 120,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'liquidos-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'LIQUIDOS',
+    tipo: 'LIQUIDOS',
+    gramasMl: 80,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'liquidos-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'LIQUIDOS',
+    tipo: 'LIQUIDOS',
+    gramasMl: 60,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'liquidos-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'LIQUIDOS',
+    tipo: 'LIQUIDOS',
+    gramasMl: 15,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'liquidos-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'LIQUIDOS',
+    tipo: 'LIQUIDOS',
+    gramasMl: 5,
+    unidadeMedida: 'ml',
+  },
+
+  // Leite
+  {
+    id: 'leite-1',
+    quantidade: '1',
+    conversao: 'XÍCARA',
+    ingrediente: 'LEITE',
+    tipo: 'LIQUIDOS',
+    gramasMl: 240,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'leite-1-2',
+    quantidade: '1/2',
+    conversao: 'XÍCARA',
+    ingrediente: 'LEITE',
+    tipo: 'LIQUIDOS',
+    gramasMl: 120,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'leite-1-3',
+    quantidade: '1/3',
+    conversao: 'XÍCARA',
+    ingrediente: 'LEITE',
+    tipo: 'LIQUIDOS',
+    gramasMl: 80,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'leite-1-4',
+    quantidade: '1/4',
+    conversao: 'XÍCARA',
+    ingrediente: 'LEITE',
+    tipo: 'LIQUIDOS',
+    gramasMl: 60,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'leite-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'LEITE',
+    tipo: 'LIQUIDOS',
+    gramasMl: 15,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'leite-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'LEITE',
+    tipo: 'LIQUIDOS',
+    gramasMl: 5,
+    unidadeMedida: 'ml',
+  },
+
+  // Fermentos
+  {
+    id: 'fermento-po-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'FERMENTO EM PÓ',
+    tipo: 'NORMAL',
+    gramasMl: 5,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'fermento-po-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'FERMENTO EM PÓ',
+    tipo: 'NORMAL',
+    gramasMl: 15,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'fermento-bio-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'FERMENTO BIOLÓGICO',
+    tipo: 'NORMAL',
+    gramasMl: 5,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'fermento-bio-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'FERMENTO BIOLÓGICO',
+    tipo: 'NORMAL',
+    gramasMl: 2.5,
+    unidadeMedida: 'g',
+  },
+
+  // Ovo
+  {
+    id: 'ovo-unidade',
+    quantidade: '1',
+    conversao: 'UNIDADE',
+    ingrediente: 'OVO',
+    tipo: 'NORMAL',
+    gramasMl: 50,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'ovo-gema',
+    quantidade: '1',
+    conversao: 'GEMA',
+    ingrediente: 'OVO',
+    tipo: 'NORMAL',
+    gramasMl: 20,
+    unidadeMedida: 'g',
+  },
+  {
+    id: 'ovo-clara',
+    quantidade: '1',
+    conversao: 'CLARA',
+    ingrediente: 'OVO',
+    tipo: 'NORMAL',
+    gramasMl: 30,
+    unidadeMedida: 'g',
+  },
+
+  // Essência de Baunilha
+  {
+    id: 'baunilha-colher-cha',
+    quantidade: '1',
+    conversao: 'COLHER CHÁ',
+    ingrediente: 'ESSÊNCIA DE BAUNILHA',
+    tipo: 'NORMAL',
+    gramasMl: 5,
+    unidadeMedida: 'ml',
+  },
+  {
+    id: 'baunilha-colher-sopa',
+    quantidade: '1',
+    conversao: 'COLHER SOPA',
+    ingrediente: 'ESSÊNCIA DE BAUNILHA',
+    tipo: 'NORMAL',
+    gramasMl: 15,
+    unidadeMedida: 'ml',
+  },
+]
+
+export const FRACTION_MAP: Record<string, number> = {
+  '1': 1,
+  '1/2': 0.5,
+  '1/3': 1 / 3,
+  '1/4': 0.25,
+  '3/4': 0.75,
+  '2/3': 2 / 3,
+  '1/8': 0.125,
+  '2': 2,
+  '3': 3,
+  '4': 4,
+  '5': 5,
+}
+
+export function parseFraction(str: string): number {
+  if (!str) return 0
+  const trimmed = str.trim()
+  if (FRACTION_MAP[trimmed]) return FRACTION_MAP[trimmed]
+
+  if (trimmed.includes('/')) {
+    const parts = trimmed.split('/')
+    if (parts.length === 2) {
+      const num = parseFloat(parts[0])
+      const den = parseFloat(parts[1])
+      if (den !== 0) return num / den
+    }
+  }
+
+  const num = parseFloat(trimmed.replace(',', '.'))
+  return isNaN(num) ? 0 : num
+}
