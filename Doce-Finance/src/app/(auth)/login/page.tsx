@@ -42,7 +42,7 @@ export default function LoginPage() {
         router.push('/dashboard')
         router.refresh()
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
           options: { data: { full_name: form.fullName } },
@@ -50,6 +50,12 @@ export default function LoginPage() {
         if (error) throw error
         // Popula ingredientes e receita modelo em background (fire-and-forget)
         fetch('/api/onboarding/seed', { method: 'POST' }).catch(() => {})
+        if (signUpData?.session) {
+          toast.success('Conta criada com sucesso! Bem-vinda!')
+          router.push('/dashboard')
+          router.refresh()
+          return
+        }
         toast.success('Conta criada! Você já pode entrar.')
         setMode('login')
       }
