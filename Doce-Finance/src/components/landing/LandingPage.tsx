@@ -55,7 +55,7 @@ const FAQS = [
   },
   {
     q: "A assinatura anual tem desconto?",
-    a: "Sim! No plano anual você economiza até 25% em comparação ao plano mensal. É cobrado uma única vez por ano."
+    a: "Sim! No plano anual você economiza 17% (o equivalente a quase 2 meses grátis) em comparação ao plano mensal. É cobrado uma única vez por ano."
   },
 ]
 
@@ -144,7 +144,7 @@ export default function LandingPage({ isBrazil }: Props) {
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#444", textDecoration: "none" }}>Entrar</Link>
-            <Link href="/login" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
+            <Link href="/login?mode=signup" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
               Começar agora
             </Link>
           </div>
@@ -157,7 +157,7 @@ export default function LandingPage({ isBrazil }: Props) {
           <div className="fade-in-up" style={{ flex: 1, minWidth: 0 }}>
             <div className="badge">
               <Sparkles size={14} />
-              Gestão para confeiteiros
+              Gestão para confeiteiras
             </div>
             <h1 style={{ fontSize: "clamp(36px,5vw,56px)", fontWeight: 900, lineHeight: 1.1, marginBottom: 20, color: "#111" }}>
               A gestão financeira<br />
@@ -168,7 +168,7 @@ export default function LandingPage({ isBrazil }: Props) {
               Calcule custos de receitas, gerencie pedidos, envie orçamentos profissionais com Pix e controle tudo do seu negócio — num só lugar.
             </p>
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-              <Link href="/login" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
+              <Link href="/login?mode=signup" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
                 Começar agora <ArrowRight size={18} />
               </Link>
               <a href="#screenshots" className="btn-outline" style={{ textDecoration: "none" }}>
@@ -340,7 +340,7 @@ export default function LandingPage({ isBrazil }: Props) {
               ))}
             </div>
 
-            <Link href="/login" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px", textDecoration: "none" }}>
+            <Link href="/login?mode=signup" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px", textDecoration: "none" }}>
               Assinar {billing === "monthly" ? "Mensal" : "Anual"}
               <ArrowRight size={18} />
             </Link>
@@ -363,33 +363,33 @@ export default function LandingPage({ isBrazil }: Props) {
                 text: "Mudou completamente como eu precifico os meus doces, recomendo muito!",
                 name: "Mariana Souza",
                 role: "Confeiteira Artesanal",
-                avatar: "https://i.pravatar.cc/150?u=mariana"
+                avatar: "/testimonials/mariana.jpg"
               },
               {
                 text: "Finalmente sei quanto lucro em cada bolo. O meu negócio cresceu imenso.",
                 name: "Inês Carvalho",
                 role: "Cake Designer",
-                avatar: "https://i.pravatar.cc/150?u=ines"
+                avatar: "/testimonials/ines.jpg"
               },
               {
                 text: "Os orçamentos ficam super profissionais. Os clientes fecham mais rápido.",
                 name: "Beatriz Lima",
                 role: "Atelier de Doces",
-                avatar: "https://i.pravatar.cc/150?u=beatriz"
+                avatar: "/testimonials/beatriz.jpg"
               }
             ].map((t, i) => (
-              <div key={i} style={{ flex: "1 1 300px", maxWidth: 350, background: "#fff", padding: 28, borderRadius: 16, border: "1px solid #A7F3D0", display: "flex", flexDirection: "column" }}>
+              <div key={i} style={{ flex: "1 1 300px", maxWidth: 350, background: "#fff", padding: 28, borderRadius: 16, border: "1px solid #A7F3D0", display: "flex", flexDirection: "column", boxShadow: "0 4px 16px rgba(15,118,110,0.06)", transition: "transform 0.2s, box-shadow 0.2s" }}>
                 <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
                   {[...Array(5)].map((_, idx) => <Star key={idx} size={16} color="#F4A800" fill="#F4A800" />)}
                 </div>
                 <p style={{ fontSize: 15, color: "#444", fontStyle: "italic", lineHeight: 1.7, flexGrow: 1, marginBottom: 24 }}>
-                  "{t.text}"
+                  &ldquo;{t.text}&rdquo;
                 </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <img src={t.avatar} alt={t.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #ECFDF5" }} />
+                  <Image src={t.avatar} alt={t.name} width={48} height={48} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "2px solid #10B981", boxShadow: "0 2px 6px rgba(0,0,0,0.08)" }} />
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{t.name}</p>
-                    <p style={{ fontSize: 12, color: "#888" }}>{t.role}</p>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: "#111" }}>{t.name}</p>
+                    <p style={{ fontSize: 12, color: "#0F766E", fontWeight: 600 }}>{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -430,7 +430,7 @@ export default function LandingPage({ isBrazil }: Props) {
             O seu atelier merece uma gestão profissional.<br />
             Junte-se às confeiteiras que já transformaram o negócio.
           </p>
-          <Link href="/login" className="btn-primary" style={{ background: "#fff", color: "#0F766E", fontSize: 18, padding: "18px 40px", borderRadius: 14, textDecoration: "none" }}>
+          <Link href="/login?mode=signup" className="btn-primary" style={{ background: "#fff", color: "#0F766E", fontSize: 18, padding: "18px 40px", borderRadius: 14, textDecoration: "none" }}>
             Assinar agora <ArrowRight size={20} />
           </Link>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 16 }}>
