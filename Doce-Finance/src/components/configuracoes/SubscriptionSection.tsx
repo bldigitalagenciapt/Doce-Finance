@@ -159,13 +159,19 @@ export function SubscriptionSection({ profile }: Props) {
     }
   }
 
+  const hasStripeSubscription = Boolean(data?.has_subscription)
   const isTrial =
-    !data?.has_subscription &&
+    !hasStripeSubscription &&
     (data?.status === 'trialing' || profile?.subscription_status === 'trialing')
   const trialExpired =
     isTrial && profile?.trial_ends_at ? new Date(profile.trial_ends_at) < new Date() : false
-  const isCanceledAtPeriodEnd = data?.cancel_at_period_end === true
-  const isActive = data?.status === 'active' || data?.status === 'trialing'
+  const isCanceledAtPeriodEnd = hasStripeSubscription && data?.cancel_at_period_end === true
+  const isManualActive =
+    !hasStripeSubscription &&
+    (data?.status === 'active' || profile?.subscription_status === 'active')
+  const isActive =
+    (hasStripeSubscription && (data?.status === 'active' || data?.status === 'trialing')) ||
+    isManualActive
   const isPastDue = data?.status === 'past_due'
 
   return (
@@ -334,8 +340,22 @@ export function SubscriptionSection({ profile }: Props) {
             </div>
           )}
 
+          {/* Conta com acesso ativo liberado manualmente (sem cobrança recorrente no Stripe) */}
+          {isManualActive && (
+            <div className="rounded-lg border border-brand-200 bg-brand-50/40 p-4 text-sm text-gray-700 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-gray-900">
+                  Seu acesso completo ao Doce Finance está ativo.
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Todos os recursos (fichas técnicas, orçamentos, calculadora e pedidos ilimitados) estão liberados nesta conta.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Sem assinatura e sem trial */}
-          {!data?.has_subscription && !isTrial && (
+          {!hasStripeSubscription && !isTrial && !isManualActive && (
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-gray-900">Nenhuma assinatura ativa no momento.</p>
@@ -349,32 +369,34 @@ export function SubscriptionSection({ profile }: Props) {
             </div>
           )}
 
-          {/* Ações e botões */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={handleOpenPortal}
-                loading={loadingPortal}
-                variant="outline"
-                className="flex items-center gap-1.5"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Portal do Cliente (Faturas e Cartão)
-              </Button>
-            </div>
+          {/* Ações e botões (exibidos apenas quando há vínculo no Stripe) */}
+          {(hasStripeSubscription || Boolean(profile?.stripe_customer_id)) && (
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={handleOpenPortal}
+                  loading={loadingPortal}
+                  variant="outline"
+                  className="flex items-center gap-1.5"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Portal do Cliente (Faturas e Cartão)
+                </Button>
+              </div>
 
-            {/* BOTÃO DE CANCELAMENTO FACILITADO */}
-            {data?.has_subscription && !isCanceledAtPeriodEnd && (
-              <Button
-                variant="ghost"
-                onClick={() => setShowCancelModal(true)}
-                className="text-red-600 hover:bg-red-50 hover:text-red-700 text-xs font-medium"
-              >
-                <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                Cancelar assinatura
-              </Button>
-            )}
-          </div>
+              {/* BOTÃO DE CANCELAMENTO FACILITADO */}
+              {hasStripeSubscription && !isCanceledAtPeriodEnd && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowCancelModal(true)}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 text-xs font-medium"
+                >
+                  <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                  Cancelar assinatura
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
