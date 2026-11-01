@@ -1,87 +1,236 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import Image from "next/image"
-import Link from "next/link"
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
+import Link from 'next/link'
 import {
-  ChefHat, BarChart3, BookOpen, ShoppingBag, FileText,
-  CalendarDays, Calculator, CheckCircle2, Star,
-  ArrowRight, ChevronDown, Mail, Sparkles
-} from "lucide-react"
+  ChefHat,
+  BarChart3,
+  BookOpen,
+  ShoppingBag,
+  FileText,
+  CalendarDays,
+  Calculator,
+  CheckCircle2,
+  Star,
+  ArrowRight,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Sparkles,
+  Scale,
+  XCircle,
+  ShieldCheck,
+  Smartphone,
+  Clock,
+  TrendingUp,
+  Menu,
+  X,
+} from 'lucide-react'
 
-interface Props { isBrazil: boolean }
+interface Props {
+  isBrazil: boolean
+}
 
 const PRICING = {
-  BRL: { monthly: "14,90", yearly: "149,90", currency: "R$", saving: "17%", yearlySub: "~12,49 / mês" },
-  EUR: { monthly: "6,90", yearly: "69,90", currency: "€", saving: "17%", yearlySub: "~5,82 / mês" },
+  BRL: {
+    monthly: '14,90',
+    yearly: '149,90',
+    yearlySub: '~12,49 / mês',
+    currency: 'R$',
+    saving: '17%',
+    regionSubtitle: 'Valores em Reais · tabela exclusiva para o Brasil',
+    paymentMethod: 'Pix',
+    heroExampleCost: 'R$ 35,00',
+    heroExampleSale: 'R$ 85,00',
+  },
+  EUR: {
+    monthly: '6,90',
+    yearly: '69,90',
+    yearlySub: '~5,82 / mês',
+    currency: '€',
+    saving: '17%',
+    regionSubtitle: 'Valores em Euros · tabela exclusiva para a Europa',
+    paymentMethod: 'MBWay',
+    heroExampleCost: '€ 12,00',
+    heroExampleSale: '€ 30,00',
+  },
 }
 
 const FEATURES = [
-  { icon: BookOpen, title: "Receitas & Fichas Técnicas", desc: "Calcule o custo exato de cada receita por ingrediente, com margem de lucro configurável." },
-  { icon: ShoppingBag, title: "Pedidos e Entregas", desc: "Organize todos os pedidos com status, datas de entrega e valores em tempo real." },
-  { icon: BarChart3, title: "Dashboard Financeiro", desc: "Visualize faturamento, pedidos do mês e clientes num painel limpo e intuitivo." },
-  { icon: CalendarDays, title: "Agenda de Entregas", desc: "Calendário visual com todas as entregas agendadas para não perder nenhum prazo." },
-  { icon: Calculator, title: "Calculadora de Custos", desc: "Simule preços por porção e taxas de entrega para vender em aplicativos." },
+  {
+    icon: BookOpen,
+    tag: 'Precificação Exata',
+    title: 'Receitas & Fichas Técnicas',
+    desc: 'Descubra o custo real de cada bolo, brigadeiro ou encomenda ao centavo. Quando o preço de um insumo sobe, todas as receitas atualizam sozinhas.',
+  },
+  {
+    icon: FileText,
+    tag: 'Mais Vendas',
+    title: 'Orçamentos em PDF & Link com Pix',
+    desc: 'Envie um link profissional com a sua logo e cor da marca. O seu cliente aprova online com 1 clique e já paga o sinal via QR Code Pix ou MBWay.',
+  },
+  {
+    icon: Scale,
+    tag: 'Exclusivo',
+    title: 'Conversor Xícaras ➔ Balança',
+    desc: 'Sua receita está em xícaras ou colheres? Converta instantaneamente medidas caseiras para gramas (g) ou mililitros (ml) com precisão culinária.',
+  },
+  {
+    icon: ShoppingBag,
+    tag: 'Organização',
+    title: 'Pedidos & Controle de Sinal',
+    desc: 'Acompanhe o status desde o orçamento até a entrega: saiba exatamente quanto o cliente já pagou de entrada e quanto falta receber.',
+  },
+  {
+    icon: CalendarDays,
+    tag: 'Zero Atrasos',
+    title: 'Agenda Visual de Entregas',
+    desc: 'Visualize a sua semana e o seu mês num calendário claro. Nunca mais aceite duas encomendas grandes para o mesmo horário por engano.',
+  },
+  {
+    icon: Calculator,
+    tag: 'Lucro Garantido',
+    title: 'Calculadora de Custos & Fatias',
+    desc: 'Simule preços de venda por unidade, fatia ou cento, incluindo custos extras de embalagem, gás, energia e margem de lucro desejada.',
+  },
 ]
 
 const SCREENSHOTS = [
-  { src: "/screenshots/dashboard.png", label: "Dashboard", desc: "Visão geral do seu atelier" },
-  { src: "/screenshots/ingredientes.png", label: "Ingredientes", desc: "Custo por unidade automático" },
-  { src: "/screenshots/receitas.png", label: "Receitas", desc: "Ficha técnica com precificação" },
-  { src: "/screenshots/pedido-modal.png", label: "Pedidos", desc: "Gestão de pedidos completa" },
-  { src: "/screenshots/agenda.png", label: "Agenda", desc: "Calendário de entregas" },
-  { src: "/screenshots/calculadora.png", label: "Calculadora", desc: "Simulador de custos" },
-  { src: "/screenshots/clientes.png", label: "Clientes", desc: "Base de clientes e histórico" },
+  {
+    src: '/screenshots/dashboard.png',
+    label: 'Dashboard',
+    desc: 'Visão geral do seu atelier: faturamento, encomendas da semana e indicadores de lucro.',
+  },
+  {
+    src: '/screenshots/receitas.png',
+    label: 'Fichas Técnicas',
+    desc: 'Monte receitas por etapas (Massa, Recheio, Cobertura) com cálculo automático de custo e lucro.',
+  },
+  {
+    src: '/screenshots/orcamentos.png',
+    label: 'Orçamentos Online',
+    desc: 'Página exclusiva que o seu cliente recebe no WhatsApp com botão de aprovar, PDF e QR Code Pix.',
+  },
+  {
+    src: '/screenshots/ingredientes.png',
+    label: 'Ingredientes',
+    desc: 'Cadastre o preço da embalagem fechada e o sistema calcula sozinho o custo por grama ou ml.',
+  },
+  {
+    src: '/screenshots/pedido-modal.png',
+    label: 'Pedidos',
+    desc: 'Gestão completa de encomendas, taxa de entrega, descontos, valor pago e saldo restante.',
+  },
+  {
+    src: '/screenshots/agenda.png',
+    label: 'Agenda',
+    desc: 'Calendário inteligente com todas as entregas organizadas por data e horário.',
+  },
+  {
+    src: '/screenshots/calculadora.png',
+    label: 'Calculadora',
+    desc: 'Simulador rápido para testar margens de lucro e preços de novos produtos em segundos.',
+  },
+  {
+    src: '/screenshots/clientes.png',
+    label: 'Clientes VIP',
+    desc: 'Histórico completo de cada cliente: telefone, endereço, total gasto e quantidade de pedidos.',
+  },
+]
+
+const PAIN_POINTS = [
+  'Passar horas tentando montar planilhas que quebram as fórmulas no celular',
+  'Cobrar o mesmo preço do concorrente e descobrir no fim do mês que pagou para trabalhar',
+  'Esquecer de somar embalagem, fita, gás, energia e taxa de entrega no custo final',
+  'Demorar horas para responder um orçamento no WhatsApp e perder o cliente',
+  'Medir ingredientes no "olhômetro" em xícaras e ter um custo diferente a cada fornada',
+]
+
+const GAINS = [
+  'Custo exato por grama/ml atualizado automaticamente em todas as suas receitas',
+  'Conversor integrado de xícaras e colheres para gramas direto na ficha técnica',
+  'Orçamento personalizado com sua logo, QR Code Pix/MBWay e aprovação em 1 clique',
+  'Controle claro de sinal pago (50%) e valor restante na entrega de cada pedido',
+  'Acesso rápido pelo celular, tablet ou computador — de qualquer lugar da cozinha',
+]
+
+const STEPS = [
+  {
+    num: '01',
+    title: 'Cadastre seus ingredientes',
+    desc: 'Já entregamos uma lista inicial pronta! Basta informar quanto pagou na embalagem (ex.: 1kg de farinha ou 395g de leite condensado).',
+  },
+  {
+    num: '02',
+    title: 'Monte sua Ficha Técnica',
+    desc: 'Adicione as quantidades da receita (ou use o nosso conversor de xícaras para gramas) e escolha sua margem de lucro ideal.',
+  },
+  {
+    num: '03',
+    title: 'Envie Orçamentos e Lucre',
+    desc: 'Gere o link ou PDF do orçamento com sua cor, sua logo e QR Code Pix/MBWay. Quando o cliente aceita, já vira pedido confirmado!',
+  },
 ]
 
 const FAQS = [
   {
-    q: "Preciso de conhecimentos técnicos?",
-    a: "Não. O Doce Finance foi criado especialmente para confeiteiros e artesãos. A interface é simples e intuitiva, e você começa a usar em minutos."
+    q: 'Como funciona o teste grátis de 15 dias?',
+    a: 'Ao criar sua conta, você tem acesso imediato a todas as funcionalidades do Doce Finance por 15 dias gratuitamente, sem precisar cadastrar cartão de crédito agora.',
   },
   {
-    q: "Funciona no celular?",
-    a: "Sim! O sistema é 100% responsivo e funciona perfeitamente no smartphone, tablet e computador."
+    q: 'Preciso de conhecimentos técnicos ou saber usar Excel?',
+    a: 'De jeito nenhum! O Doce Finance foi desenhado especificamente para confeiteiras. Você só digita o nome do ingrediente, o peso da embalagem e o valor pago — o sistema faz todas as contas sozinho.',
   },
   {
-    q: "Posso cancelar quando quiser?",
-    a: "Sim, sem multas ou burocracia. Você pode cancelar a assinatura a qualquer momento pelo painel de configurações."
+    q: 'Minhas receitas estão em xícaras e colheres. Consigo usar?',
+    a: 'Sim! Temos um Conversor Culinário exclusivo integrado dentro das receitas: você escolhe o ingrediente (ex.: farinha, açúcar, cacau), informa quantas xícaras ou colheres usa e ele converte para gramas ou ml na hora.',
   },
   {
-    q: "Os meus dados ficam seguros?",
-    a: "Sim. Utilizamos Supabase (infraestrutura da AWS) com criptografia de ponta a ponta. Os seus dados são exclusivamente seus."
+    q: 'Como funciona o orçamento com QR Code Pix e MBWay?',
+    a: 'Nas configurações você informa sua chave Pix (Brasil) ou número MBWay (Portugal), além da logo e cor do seu atelier. Todo orçamento gerado cria um link lindo e um PDF com QR Code pronto para o cliente pagar e aprovar online.',
   },
   {
-    q: "A assinatura anual tem desconto?",
-    a: "Sim! No plano anual você economiza 17% (o equivalente a quase 2 meses grátis) em comparação ao plano mensal. É cobrado uma única vez por ano."
+    q: 'Funciona no celular?',
+    a: 'Sim! O sistema é 100% responsivo e funciona direto no navegador do seu celular (Android ou iPhone), tablet e computador, sem ocupar memória do aparelho.',
+  },
+  {
+    q: 'Posso cancelar quando quiser?',
+    a: 'Sim, com apenas 1 clique direto na tela de Configurações, sem multas, sem fidelidade e sem precisar ligar para ninguém.',
+  },
+  {
+    q: 'Os meus dados e as minhas receitas secretas ficam seguros?',
+    a: 'Totalmente. Utilizamos criptografia avançada (AES-256-GCM e Bcrypt) e isolamento por usuário no banco de dados. Suas receitas e dados de clientes são 100% privados e você ainda pode exportar backup em Excel (.xlsx) quando quiser.',
   },
 ]
 
 export default function LandingPage({ isBrazil }: Props) {
   const router = useRouter()
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly")
-  const [currency, setCurrency] = useState<"EUR" | "BRL">(isBrazil ? "BRL" : "EUR")
+  const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
+  const [currency, setCurrency] = useState<'EUR' | 'BRL'>(isBrazil ? 'BRL' : 'EUR')
   const [activeScreenshot, setActiveScreenshot] = useState(0)
-  const [activeFaq, setActiveFaq] = useState<number | null>(null)
+  const [activeFaq, setActiveFaq] = useState<number | null>(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Detecta idioma e ajusta moeda
   useEffect(() => {
-    if (typeof window !== "undefined" && navigator.language.includes("pt-BR")) {
-      setCurrency("BRL")
+    if (typeof window !== 'undefined' && navigator.language.includes('pt-BR')) {
+      setCurrency('BRL')
     }
   }, [])
 
-  // Redireciona usuarios ja logados para o dashboard
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) router.replace("/dashboard")
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (user) router.replace('/dashboard')
       } catch {
-        // Ignora erros de auth - mostra landing page
+        // Mostra landing page normalmente
       }
     }
     checkAuth()
@@ -89,379 +238,770 @@ export default function LandingPage({ isBrazil }: Props) {
 
   const p = PRICING[currency]
 
-  return (
-    <div style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#FAFAF8", color: "#1A1A1A" }}>
-      {/* ── Google Fonts ── */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        .nav-link { color: #444; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-        .nav-link:hover { color: #0F766E; }
-        .btn-primary { background: #0F766E; color: #fff; border: none; border-radius: 10px; padding: 14px 28px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary:hover { background: #052E2B; transform: translateY(-1px); }
-        .btn-outline { background: transparent; color: #0F766E; border: 2px solid #0F766E; border-radius: 10px; padding: 12px 26px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-outline:hover { background: #0F766E; color: #fff; }
-        .section { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
-        .badge { display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; color: #0F766E; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
-        .screenshot-thumb { width: 80px; height: 52px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; opacity: 0.6; }
-        .screenshot-thumb.active { border-color: #0F766E; opacity: 1; }
-        .faq-item { border-bottom: 1px solid #E8E8E4; }
-        .faq-btn { width: 100%; background: none; border: none; padding: 20px 0; text-align: left; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #1A1A1A; }
-        .tag { display: inline-block; background: #ECFDF5; color: #0F766E; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        .float { animation: float 4s ease-in-out infinite; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        .feature-card:hover .feature-icon { transform: scale(1.1); background: #0F766E !important; }
-        .feature-card:hover .feature-icon svg { stroke: #fff !important; }
-        .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out, padding 0.3s ease; }
-        .faq-content.open { max-height: 200px; padding-bottom: 20px; }
-        @media(max-width:768px){
-          .hero-grid{flex-direction:column!important;}
-          .feature-grid{grid-template-columns:1fr!important;}
-          .price-grid{flex-direction:column!important;align-items:center!important;}
-          .nav-links{display:none!important;}
-        }
-      `}</style>
+  const prevScreenshot = () =>
+    setActiveScreenshot((prev) => (prev === 0 ? SCREENSHOTS.length - 1 : prev - 1))
+  const nextScreenshot = () =>
+    setActiveScreenshot((prev) => (prev === SCREENSHOTS.length - 1 ? 0 : prev + 1))
 
-      {/* ── NAV ── */}
-      <nav style={{ background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(235, 235, 235, 0.5)", boxShadow: "0 4px 20px rgba(0,0,0,0.03)", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#0F766E", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ChefHat size={20} color="#fff" />
+  return (
+    <div className="min-h-screen bg-[#FAFAF8] text-gray-900 font-sans selection:bg-teal-700 selection:text-white">
+      {/* ── BARRA DE DESTAQUE TOPO ── */}
+      <div className="bg-teal-900 px-4 py-2 text-center text-xs font-medium text-teal-50">
+        <span className="inline-flex items-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+          <span>
+            <strong>Novo:</strong> Conversor de Xícaras para Balança + Orçamentos em PDF com QR Code Pix!{' '}
+          </span>
+          <Link
+            href="/login?mode=signup"
+            className="ml-1 underline decoration-emerald-400 underline-offset-2 font-bold text-white hover:text-emerald-300"
+          >
+            Teste 15 dias grátis ➔
+          </Link>
+        </span>
+      </div>
+
+      {/* ── NAVBAR ── */}
+      <header className="sticky top-0 z-50 border-b border-gray-200/70 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-sm">
+              <ChefHat className="h-5 w-5" />
             </div>
-            <span style={{ fontWeight: 800, fontSize: 18, color: "#1A1A1A" }}>Doce Finance</span>
+            <span className="text-lg font-extrabold tracking-tight text-gray-900">
+              Doce Finance
+            </span>
           </div>
-          <div className="nav-links" style={{ display: "flex", gap: 32 }}>
-            <a href="#features" className="nav-link">Funcionalidades</a>
-            <a href="#screenshots" className="nav-link">Visão da App</a>
-            <a href="#pricing" className="nav-link">Preços</a>
-            <a href="#faq" className="nav-link">FAQ</a>
-          </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#444", textDecoration: "none" }}>Entrar</Link>
-            <Link href="/login?mode=signup" className="btn-primary" style={{ padding: "8px 18px", fontSize: 14, textDecoration: "none" }}>
-              Começar agora
+
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-600">
+            <a href="#comparativo" className="hover:text-teal-700 transition-colors">
+              Por que usar
+            </a>
+            <a href="#features" className="hover:text-teal-700 transition-colors">
+              Funcionalidades
+            </a>
+            <a href="#como-funciona" className="hover:text-teal-700 transition-colors">
+              Como funciona
+            </a>
+            <a href="#screenshots" className="hover:text-teal-700 transition-colors">
+              Por dentro do App
+            </a>
+            <a href="#pricing" className="hover:text-teal-700 transition-colors">
+              Planos
+            </a>
+            <a href="#faq" className="hover:text-teal-700 transition-colors">
+              Dúvidas
+            </a>
+          </nav>
+
+          <div className="hidden sm:flex items-center gap-3">
+            <Link
+              href="/login"
+              className="px-3 py-2 text-sm font-semibold text-gray-700 hover:text-teal-700 transition-colors"
+            >
+              Entrar
+            </Link>
+            <Link
+              href="/login?mode=signup"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-teal-800 transition-all hover:-translate-y-0.5"
+            >
+              <span>Testar grátis</span>
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-        </div>
-      </nav>
 
-      {/* ── HERO ── */}
-      <div style={{ background: "linear-gradient(160deg,#F0F7F0 0%,#FAFAF8 60%,#FFF8F0 100%)", padding: "80px 24px 60px" }}>
-        <div className="hero-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 64 }}>
-          <div className="fade-in-up" style={{ flex: 1, minWidth: 0 }}>
-            <div className="badge">
-              <Sparkles size={14} />
-              Gestão para confeiteiras
-            </div>
-            <h1 style={{ fontSize: "clamp(36px,5vw,56px)", fontWeight: 900, lineHeight: 1.1, marginBottom: 20, color: "#111" }}>
-              A gestão financeira<br />
-              <span style={{ color: "#0F766E" }}>feita para o seu</span><br />
-              atelier de doces
-            </h1>
-            <p style={{ fontSize: 18, color: "#555", lineHeight: 1.7, marginBottom: 36, maxWidth: 480 }}>
-              Calcule custos de receitas, gerencie pedidos, envie orçamentos profissionais com Pix e controle tudo do seu negócio — num só lugar.
-            </p>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-              <Link href="/login?mode=signup" className="btn-primary" style={{ fontSize: 17, padding: "16px 32px", textDecoration: "none" }}>
-                Começar agora <ArrowRight size={18} />
-              </Link>
-              <a href="#screenshots" className="btn-outline" style={{ textDecoration: "none" }}>
-                Ver demonstração
+          {/* Botão Menu Mobile */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="inline-flex items-center justify-center rounded-lg p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+            aria-label="Abrir menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Menu Mobile Dropdown */}
+        {mobileMenuOpen && (
+          <div className="border-t border-gray-100 bg-white px-4 pt-3 pb-5 shadow-lg md:hidden">
+            <div className="flex flex-col space-y-3 text-sm font-medium text-gray-700">
+              <a href="#comparativo" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Por que usar
               </a>
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Funcionalidades
+              </a>
+              <a href="#como-funciona" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Como funciona
+              </a>
+              <a href="#screenshots" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Por dentro do App
+              </a>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Planos e Preços
+              </a>
+              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Dúvidas Frequentes
+              </a>
+              <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100">
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  href="/login?mode=signup"
+                  className="flex items-center justify-center rounded-xl bg-teal-700 py-2.5 text-sm font-bold text-white"
+                >
+                  Testar 15 dias grátis
+                </Link>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 24, marginTop: 40, flexWrap: "wrap" }}>
-              {["Sem limite de receitas", "Cancele quando quiser", "Suporte em português"].map(t => (
-                <div key={t} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#555" }}>
-                  <CheckCircle2 size={15} color="#0F766E" />
-                  {t}
+          </div>
+        )}
+      </header>
+
+      {/* ── HERO SECTION ── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50/70 via-[#FAFAF8] to-[#FAFAF8] pt-12 pb-20 sm:pt-20 sm:pb-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+            {/* Copy Principal */}
+            <div className="lg:col-span-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/80 px-3.5 py-1.5 text-xs font-bold text-teal-800 mb-6">
+                <Sparkles className="h-3.5 w-3.5 text-teal-600" />
+                <span>Sistema nº 1 de Precificação e Gestão para Confeiteiras</span>
+              </div>
+
+              <h1 className="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-[52px] leading-[1.1]">
+                Pare de chutar preços e{' '}
+                <span className="bg-gradient-to-r from-teal-700 to-emerald-600 bg-clip-text text-transparent">
+                  veja o lucro real
+                </span>{' '}
+                de cada encomenda.
+              </h1>
+
+              <p className="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed max-w-xl">
+                Monte fichas técnicas em minutos, converta receitas de xícaras para gramas, envie{' '}
+                <strong className="font-semibold text-gray-900">
+                  orçamentos profissionais com QR Code Pix
+                </strong>{' '}
+                e organize toda a sua agenda de entregas num só lugar.
+              </p>
+
+              {/* CTAs */}
+              <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5">
+                <Link
+                  href="/login?mode=signup"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-7 py-4 text-base font-bold text-white shadow-lg shadow-teal-700/20 hover:bg-teal-800 transition-all hover:-translate-y-0.5"
+                >
+                  <span>Começar 15 dias grátis</span>
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <a
+                  href="#screenshots"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-200 bg-white px-6 py-3.5 text-sm font-bold text-gray-700 hover:border-teal-600 hover:text-teal-700 transition-all"
+                >
+                  Ver o sistema por dentro
+                </a>
+              </div>
+
+              {/* Microcopy de confiança */}
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-gray-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-teal-600" />
+                  15 dias grátis para testar tudo
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-teal-600" />
+                  Funciona no celular e computador
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-teal-600" />
+                  Cancele com 1 clique
+                </span>
+              </div>
+            </div>
+
+            {/* Mockup Visual com Badges Flutuantes */}
+            <div className="relative lg:col-span-6">
+              <div className="relative rounded-2xl border border-gray-200/80 bg-white shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between bg-gray-100 px-4 py-2.5 border-b border-gray-200">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
+                    <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
+                    <span className="h-3 w-3 rounded-full bg-[#28CA41]" />
+                  </div>
+                  <span className="text-[11px] font-medium text-gray-400">
+                    doce-finance.vercel.app/dashboard
+                  </span>
+                  <div className="w-10" />
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="float" style={{ flex: 1, minWidth: 0, maxWidth: 560 }}>
-            <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 24px 80px rgba(0,0,0,0.12)", overflow: "hidden", border: "1px solid #E8E8E4" }}>
-              <div style={{ background: "#F0F0EE", padding: "12px 16px", display: "flex", gap: 6 }}>
-                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FF5F57" }} />
-                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FFBD2E" }} />
-                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28CA41" }} />
+                <Image
+                  src="/screenshots/dashboard.png"
+                  alt="Painel de controle Doce Finance"
+                  width={640}
+                  height={420}
+                  className="w-full h-auto block"
+                  priority
+                />
               </div>
-              <Image src="/screenshots/dashboard.png" alt="Dashboard Doce Finance" width={560} height={360} style={{ width: "100%", height: "auto", display: "block" }} priority />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── SOCIAL PROOF ── */}
-      <div style={{ background: "#fff", borderTop: "1px solid #EBEBEB", borderBottom: "1px solid #EBEBEB", padding: "24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 12 }}>
-          <div style={{ display: "flex", gap: 4 }}>
-            {[...Array(5)].map((_, idx) => <Star key={idx} size={16} color="#F4A800" fill="#F4A800" />)}
-          </div>
-          <p style={{ fontSize: 14, color: "#666", fontWeight: 500 }}>Usado por centenas de confeiteiras no 🇧🇷 Brasil e 🇵🇹 Portugal</p>
-        </div>
-      </div>
-
-      {/* ── FEATURES ── */}
-      <div className="section" id="features">
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <div className="badge" style={{ margin: "0 auto 16px" }}><BarChart3 size={14} /> Funcionalidades</div>
-          <h2 style={{ fontSize: "clamp(28px,4vw,42px)", fontWeight: 800, color: "#111" }}>
-            Tudo o que precisa para<br />gerir o seu negócio
-          </h2>
-          <p style={{ fontSize: 17, color: "#666", marginTop: 12, maxWidth: 520, margin: "12px auto 0" }}>
-            Do custo do ingrediente ao orçamento final do cliente, o Doce Finance cobre todo o ciclo.
-          </p>
-        </div>
-        <div className="feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
-          {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="feature-card" style={{ background: "#fff", border: "1px solid #E8E8E4", borderRadius: 16, padding: 28, transition: "box-shadow 0.2s, transform 0.2s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(15,118,110,0.12)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)" }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.transform = "none" }}>
-              <div className="feature-icon" style={{ width: 48, height: 48, borderRadius: 12, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, transition: "all 0.3s ease" }}>
-                <Icon size={22} color="#0F766E" style={{ transition: "stroke 0.3s ease" }} />
+              {/* Card Flutuante 1: Lucro Calculado */}
+              <div className="hidden sm:flex items-center gap-3 rounded-xl border border-emerald-200 bg-white/95 backdrop-blur-md p-3.5 shadow-xl absolute -bottom-5 -left-5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+                    Bolo de Brigadeiro
+                  </p>
+                  <p className="text-sm font-extrabold text-gray-900">
+                    Custo: {p.heroExampleCost} ➔ Venda: {p.heroExampleSale}
+                  </p>
+                </div>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: "#111" }}>{title}</h3>
-              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>{desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* ── SCREENSHOTS ── */}
-      <div style={{ background: "#111", padding: "80px 24px" }} id="screenshots">
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <div className="badge" style={{ background: "rgba(255,255,255,0.1)", color: "#34D399" }}><Star size={14} /> App em detalhe</div>
-            <h2 style={{ fontSize: "clamp(28px,4vw,42px)", fontWeight: 800, color: "#fff", marginTop: 8 }}>
-              Veja como funciona na prática
+              {/* Card Flutuante 2: Orçamento Aprovado */}
+              <div className="hidden sm:flex items-center gap-2.5 rounded-xl border border-teal-200 bg-white/95 backdrop-blur-md px-3.5 py-2.5 shadow-xl absolute -top-4 -right-4">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-gray-800">
+                  Orçamento #104 aprovado pelo cliente!
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PROVA SOCIAL & NÚMEROS ── */}
+      <section className="border-y border-gray-200/80 bg-white py-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4 text-center">
+            <div>
+              <div className="flex items-center justify-center gap-1 text-amber-400 mb-1">
+                {[...Array(5)].map((_, idx) => (
+                  <Star key={idx} className="h-4 w-4 fill-amber-400" />
+                ))}
+              </div>
+              <p className="text-xs font-medium text-gray-500">
+                Aprovado por confeiteiras no 🇧🇷 Brasil e 🇵🇹 Portugal
+              </p>
+            </div>
+            <div>
+              <p className="text-2xl font-black text-teal-700">100% Exato</p>
+              <p className="text-xs font-medium text-gray-500">
+                Custo calculado por grama, ml ou unidade
+              </p>
+            </div>
+            <div>
+              <p className="text-2xl font-black text-teal-700">&lt; 1 minuto</p>
+              <p className="text-xs font-medium text-gray-500">
+                Para gerar um orçamento em PDF com QR Code Pix
+              </p>
+            </div>
+            <div>
+              <p className="text-2xl font-black text-teal-700">15 Dias Grátis</p>
+              <p className="text-xs font-medium text-gray-500">
+                Para testar todas as ferramentas sem compromisso
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SEÇÃO DOR VS SOLUÇÃO (ANTES E DEPOIS) ── */}
+      <section id="comparativo" className="py-20 px-4 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/60">
+              Chega de trabalhar no escuro
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Por que tantas confeiteiras trabalham muito e não veem a cor do dinheiro?
             </h2>
-            <p style={{ color: "#aaa", marginTop: 12, fontSize: 16 }}>Imagens reais do Doce Finance — sem filtros.</p>
+            <p className="mt-3 text-base text-gray-600">
+              A diferença entre um atelier que apenas sobrevive e um atelier lucrativo está no
+              controle dos custos.
+            </p>
           </div>
 
-          {/* Main screenshot */}
-          <div style={{ background: "#1A1A1A", borderRadius: 20, overflow: "hidden", border: "1px solid #333", marginBottom: 20, boxShadow: "0 32px 80px rgba(0,0,0,0.5)" }}>
-            <div style={{ background: "#222", padding: "12px 16px", display: "flex", gap: 6 }}>
-              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FF5F57" }} />
-              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FFBD2E" }} />
-              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28CA41" }} />
-              <span style={{ marginLeft: 12, fontSize: 12, color: "#666" }}>doce-finance.vercel.app/{SCREENSHOTS[activeScreenshot].label.toLowerCase()}</span>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            {/* Sem Doce Finance */}
+            <div className="rounded-2xl border border-red-200/80 bg-red-50/30 p-7 sm:p-8">
+              <div className="inline-flex items-center gap-2 rounded-lg bg-red-100 px-3 py-1 text-xs font-bold text-red-800 mb-5">
+                <XCircle className="h-4 w-4 text-red-600" />
+                <span>Sem o Doce Finance (Caderninho / Planilhas)</span>
+              </div>
+              <ul className="space-y-4">
+                {PAIN_POINTS.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm text-gray-700">
+                    <XCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <Image
-              key={activeScreenshot}
-              className="fade-in"
-              src={SCREENSHOTS[activeScreenshot].src}
-              alt={SCREENSHOTS[activeScreenshot].label}
-              width={1100} height={620}
-              style={{ width: "100%", height: "auto", display: "block" }}
-            />
+
+            {/* Com Doce Finance */}
+            <div className="rounded-2xl border-2 border-teal-600 bg-white p-7 sm:p-8 shadow-xl shadow-teal-900/5">
+              <div className="inline-flex items-center gap-2 rounded-lg bg-teal-100 px-3 py-1 text-xs font-bold text-teal-900 mb-5">
+                <CheckCircle2 className="h-4 w-4 text-teal-700" />
+                <span>Com o Doce Finance no seu Atelier</span>
+              </div>
+              <ul className="space-y-4">
+                {GAINS.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-sm font-medium text-gray-900"
+                  >
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FUNCIONALIDADES (GRID 3x2 SIMÉTRICO) ── */}
+      <section id="features" className="bg-white py-20 px-4 sm:px-6 border-y border-gray-200/60">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/60">
+              <BarChart3 className="h-3.5 w-3.5" />
+              Tudo em um só lugar
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Ferramentas criadas para a rotina real da sua cozinha
+            </h2>
+            <p className="mt-3 text-base text-gray-600">
+              Do cálculo do grama do chocolate até o comprovante do Pix do cliente.
+            </p>
           </div>
 
-          {/* Thumbs */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map(({ icon: Icon, tag, title, desc }) => (
+              <div
+                key={title}
+                className="group relative flex flex-col justify-between rounded-2xl border border-gray-200 bg-[#FAFAF8] p-7 transition-all hover:-translate-y-1 hover:border-teal-600/50 hover:bg-white hover:shadow-xl hover:shadow-teal-900/5"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-700 group-hover:bg-teal-700 group-hover:text-white transition-colors">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-800 border border-teal-200/60">
+                      {tag}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMO FUNCIONA EM 3 PASSOS ── */}
+      <section id="como-funciona" className="py-20 px-4 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/60">
+              <Clock className="h-3.5 w-3.5" />
+              Simples e rápido
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Comece a organizar seu atelier em 3 passos
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {STEPS.map((s) => (
+              <div
+                key={s.num}
+                className="relative rounded-2xl border border-gray-200 bg-white p-7 shadow-sm"
+              >
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700 text-sm font-black text-white mb-4">
+                  {s.num}
+                </span>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{s.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SHOWCASE INTERATIVO DE TELAS (COM ORÇAMENTOS E DESCRIÇÕES) ── */}
+      <section id="screenshots" className="bg-gray-950 py-20 px-4 sm:px-6 text-white">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold text-emerald-400">
+              <Smartphone className="h-3.5 w-3.5" />
+              Tour pelo sistema
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">
+              Veja cada tela do Doce Finance na prática
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-gray-400">
+              Clique nas abas abaixo para explorar todas as áreas do sistema.
+            </p>
+          </div>
+
+          {/* Botões seletores de tela */}
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
             {SCREENSHOTS.map((s, i) => (
-              <button key={i} onClick={() => setActiveScreenshot(i)}
-                style={{ background: i === activeScreenshot ? "rgba(15,118,110,0.3)" : "rgba(255,255,255,0.05)", border: i === activeScreenshot ? "2px solid #0F766E" : "2px solid transparent", borderRadius: 10, padding: "8px 16px", color: i === activeScreenshot ? "#34D399" : "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => setActiveScreenshot(i)}
+                className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
+                  i === activeScreenshot
+                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30'
+                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                }`}
+              >
                 {s.label}
               </button>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* ── PRICING ── */}
-      <div className="section" id="pricing">
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div className="badge" style={{ margin: "0 auto 16px" }}><Star size={14} /> Preços simples</div>
-          <h2 style={{ fontSize: "clamp(28px,4vw,42px)", fontWeight: 800 }}>
-            Invista no seu negócio
-          </h2>
-          <p style={{ color: "#666", marginTop: 12, fontSize: 16 }}>
-            {isBrazil ? "Valores em Reais · para confeiteiras brasileiras" : "Valores em Euros · para confeiteiras europeias"}
-          </p>
-
-          {/* Toggles */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginTop: 24 }}>
-
-
-            {/* Billing Toggle */}
-            <div style={{ display: "inline-flex", background: "#E8E8E4", borderRadius: 50, padding: 4, position: "relative" }}>
-              <div style={{ position: "absolute", top: 4, bottom: 4, left: billing === "monthly" ? 4 : "50%", width: "calc(50% - 4px)", background: "#0F766E", borderRadius: 50, transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} />
-              {(["monthly", "yearly"] as const).map(b => (
-                <button key={b} onClick={() => setBilling(b)}
-                  style={{ position: "relative", zIndex: 1, background: "transparent", color: billing === b ? "#fff" : "#666", border: "none", borderRadius: 50, padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "color 0.3s", display: "flex", alignItems: "center", gap: 6, width: 140, justifyContent: "center" }}>
-                  {b === "monthly" ? "Mensal" : "Anual"}
-                  {b === "yearly" && <span style={{ position: "absolute", top: -14, right: -16, background: "#10B981", color: "#fff", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(16,185,129,0.3)", border: "2px solid #fff", whiteSpace: "nowrap" }}>Economize {p.saving}</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="price-grid" style={{ display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
-          {/* Card único */}
-          <div style={{ background: "#fff", border: "2px solid #0F766E", borderRadius: 24, padding: 40, maxWidth: 420, width: "100%", position: "relative", boxShadow: "0 16px 64px rgba(15,118,110,0.15)", transition: "all 0.3s ease" }}>
-            <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#0F766E", color: "#fff", borderRadius: 20, padding: "4px 18px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
-              ✨ Acesso Completo
-            </div>
-            <div style={{ marginBottom: 24, marginTop: 8 }}>
-              <p style={{ fontSize: 14, color: "#888", marginBottom: 4 }}>Doce Finance</p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 22, fontWeight: 700, color: "#333", transition: "all 0.3s ease" }}>{p.currency}</span>
-                <span style={{ fontSize: 52, fontWeight: 900, color: "#111", lineHeight: 1, transition: "all 0.3s ease" }}>
-                  {billing === "monthly" ? p.monthly : p.yearly}
-                </span>
-              </div>
-              <p style={{ color: "#888", fontSize: 14, marginTop: 4, minHeight: 20 }}>
-                {billing === "monthly" ? "por mês" : `por ano · equivale a ${p.currency} ${p.yearlySub}`}
+          {/* Descrição da tela selecionada */}
+          <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 max-w-3xl mx-auto">
+            <button
+              type="button"
+              onClick={prevScreenshot}
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+              aria-label="Tela anterior"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="text-center">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                {SCREENSHOTS[activeScreenshot].label}
+              </span>
+              <p className="text-xs sm:text-sm text-gray-200 mt-0.5">
+                {SCREENSHOTS[activeScreenshot].desc}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={nextScreenshot}
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+              aria-label="Próxima tela"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-              {[
-                "Dashboard financeiro completo",
-                "Ingredientes e fichas técnicas ilimitadas",
-                "Pedidos e gestão de entregas",
-                "Orçamentos com QR Code Pix",
-                "Agenda de entregas",
-                "Calculadora de custos",
-                "Gestão de clientes",
-                "Suporte em português",
-              ].map(f => (
-                <div key={f} style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <CheckCircle2 size={18} color="#0F766E" style={{ flexShrink: 0 }} />
-                  <span style={{ fontSize: 15, color: "#333" }}>{f}</span>
-                </div>
-              ))}
+          {/* Moldura do navegador */}
+          <div className="overflow-hidden rounded-2xl border border-white/15 bg-gray-900 shadow-2xl">
+            <div className="flex items-center gap-2 bg-gray-800/90 px-4 py-3 border-b border-white/10">
+              <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
+              <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
+              <span className="h-3 w-3 rounded-full bg-[#28CA41]" />
+              <span className="ml-3 rounded-md bg-gray-900/80 px-3 py-1 text-xs text-gray-400">
+                doce-finance.vercel.app/{SCREENSHOTS[activeScreenshot].label.toLowerCase()}
+              </span>
             </div>
-
-            <Link href="/login?mode=signup" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 17, padding: "16px", textDecoration: "none" }}>
-              Assinar {billing === "monthly" ? "Mensal" : "Anual"}
-              <ArrowRight size={18} />
-            </Link>
-            <p style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 14 }}>
-              Pagamento seguro via Stripe · Cancele quando quiser
-            </p>
+            <Image
+              key={activeScreenshot}
+              src={SCREENSHOTS[activeScreenshot].src}
+              alt={SCREENSHOTS[activeScreenshot].label}
+              width={1100}
+              height={620}
+              className="w-full h-auto block"
+            />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <div style={{ background: "#F5FAF5", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px,3vw,36px)", fontWeight: 800 }}>O que dizem as confeiteiras</h2>
+      {/* ── DEPOIMENTOS ── */}
+      <section className="bg-emerald-50/40 py-20 px-4 sm:px-6 border-b border-gray-200/60">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/60">
+              Quem usa, recomenda
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+              O que dizem as confeiteiras
+            </h2>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", justifyContent: "center", gap: 24 }}>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               {
-                text: "Mudou completamente como eu precifico os meus doces, recomendo muito!",
-                name: "Mariana Souza",
-                role: "Confeiteira Artesanal",
-                avatar: "/testimonials/mariana.jpg"
+                text: 'Mudou completamente como eu precifico os meus doces. Antes eu tinha medo de cobrar o justo, hoje sei exatamente o meu lucro em cada receita!',
+                name: 'Mariana Souza',
+                role: 'Confeiteira Artesanal · SP',
+                avatar: '/testimonials/mariana.jpg',
               },
               {
-                text: "Finalmente sei quanto lucro em cada bolo. O meu negócio cresceu imenso.",
-                name: "Inês Carvalho",
-                role: "Cake Designer",
-                avatar: "/testimonials/ines.jpg"
+                text: 'O conversor de xícaras para gramas e a ficha técnica por etapas me poupam horas toda semana. O meu negócio cresceu imenso.',
+                name: 'Inês Carvalho',
+                role: 'Cake Designer · Lisboa',
+                avatar: '/testimonials/ines.jpg',
               },
               {
-                text: "Os orçamentos ficam super profissionais. Os clientes fecham mais rápido.",
-                name: "Beatriz Lima",
-                role: "Atelier de Doces",
-                avatar: "/testimonials/beatriz.jpg"
-              }
-            ].map((t, i) => (
-              <div key={i} style={{ flex: "1 1 300px", maxWidth: 350, background: "#fff", padding: 28, borderRadius: 16, border: "1px solid #A7F3D0", display: "flex", flexDirection: "column", boxShadow: "0 4px 16px rgba(15,118,110,0.06)", transition: "transform 0.2s, box-shadow 0.2s" }}>
-                <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
-                  {[...Array(5)].map((_, idx) => <Star key={idx} size={16} color="#F4A800" fill="#F4A800" />)}
+                text: 'Os orçamentos com a minha logo e o QR Code Pix já pronto deixam as clientes encantadas. Elas aprovam pelo celular na mesma hora!',
+                name: 'Beatriz Lima',
+                role: 'Atelier de Doces · RJ',
+                avatar: '/testimonials/beatriz.jpg',
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="flex flex-col justify-between rounded-2xl border border-emerald-200/80 bg-white p-7 shadow-sm"
+              >
+                <div>
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, idx) => (
+                      <Star key={idx} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm sm:text-base text-gray-700 italic leading-relaxed mb-6">
+                    &ldquo;{t.text}&rdquo;
+                  </p>
                 </div>
-                <p style={{ fontSize: 15, color: "#444", fontStyle: "italic", lineHeight: 1.7, flexGrow: 1, marginBottom: 24 }}>
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Image src={t.avatar} alt={t.name} width={48} height={48} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "2px solid #10B981", boxShadow: "0 2px 6px rgba(0,0,0,0.08)" }} />
+                <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                  <Image
+                    src={t.avatar}
+                    alt={t.name}
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 rounded-full object-cover border-2 border-emerald-500"
+                  />
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: "#111" }}>{t.name}</p>
-                    <p style={{ fontSize: 12, color: "#0F766E", fontWeight: 600 }}>{t.role}</p>
+                    <p className="text-sm font-bold text-gray-900">{t.name}</p>
+                    <p className="text-xs font-semibold text-teal-700">{t.role}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* ── PREÇOS E PLANOS ── */}
+      <section id="pricing" className="py-20 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/60">
+              <Star className="h-3.5 w-3.5" />
+              Preços simples e transparentes
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Invista no crescimento do seu atelier
+            </h2>
+            <p className="mt-2 text-base text-gray-600">{p.regionSubtitle}</p>
+
+            {/* Toggle Mensal / Anual */}
+            <div className="mt-8 inline-flex items-center rounded-full bg-gray-200/80 p-1.5 relative">
+              <button
+                type="button"
+                onClick={() => setBilling('monthly')}
+                className={`relative z-10 rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
+                  billing === 'monthly'
+                    ? 'bg-teal-700 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Mensal
+              </button>
+              <button
+                type="button"
+                onClick={() => setBilling('yearly')}
+                className={`relative z-10 rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
+                  billing === 'yearly'
+                    ? 'bg-teal-700 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Anual
+                <span className="absolute -top-3 -right-4 rounded-full bg-emerald-500 px-2.5 py-0.5 text-[11px] font-extrabold text-white shadow-sm border-2 border-white whitespace-nowrap">
+                  Economize {p.saving}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Card Principal com valores regionais exatos (BRL: 14,90 / 149,90 | EUR: 6,90 / 69,90) */}
+          <div className="mx-auto max-w-md">
+            <div className="relative rounded-3xl border-2 border-teal-700 bg-white p-8 sm:p-10 shadow-2xl shadow-teal-900/10">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-teal-700 px-5 py-1 text-xs font-extrabold text-white shadow-sm whitespace-nowrap">
+                ✨ Acesso Completo · 15 Dias Grátis
+              </div>
+
+              <div className="mt-2 mb-6">
+                <p className="text-sm font-medium text-gray-500">
+                  Doce Finance · Plano {billing === 'monthly' ? 'Mensal' : 'Anual'}
+                </p>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-bold text-gray-800">{p.currency}</span>
+                  <span className="text-5xl sm:text-6xl font-black text-gray-900 tracking-tight leading-none">
+                    {billing === 'monthly' ? p.monthly : p.yearly}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-gray-500">
+                  {billing === 'monthly'
+                    ? 'por mês · cancele quando quiser'
+                    : `por ano · equivale a ${p.currency} ${p.yearlySub}`}
+                </p>
+              </div>
+
+              <hr className="my-6 border-gray-100" />
+
+              <ul className="space-y-3.5 text-sm font-medium text-gray-700 mb-8">
+                {[
+                  'Dashboard financeiro completo',
+                  'Ingredientes e fichas técnicas ilimitadas',
+                  'Conversor culinário (Xícaras e Colheres ➔ Gramas/ML)',
+                  'Pedidos, controle de sinais e gestão de entregas',
+                  `Orçamentos em PDF e link com QR Code (${p.paymentMethod})`,
+                  'Agenda visual de entregas',
+                  'Calculadora rápida de custos e margem',
+                  'Gestão de clientes e backup em Excel (.xlsx)',
+                  'Suporte em português',
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-teal-600 shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/login?mode=signup"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 py-4 text-base font-bold text-white shadow-lg shadow-teal-700/25 hover:bg-teal-800 transition-all hover:-translate-y-0.5"
+              >
+                <span>Começar 15 dias grátis ({billing === 'monthly' ? 'Mensal' : 'Anual'})</span>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+
+              <p className="mt-4 text-center text-xs text-gray-400">
+                Pagamento seguro via Stripe · Cancele quando quiser com 1 clique
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500">
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-teal-700" />
+              Pagamento 100% seguro processado pela Stripe
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-teal-700" />
+              Sem fidelidade · Cancelamento facilitado nas configurações
+            </span>
+          </div>
+        </div>
+      </section>
 
       {/* ── FAQ ── */}
-      <div className="section" id="faq" style={{ maxWidth: 720 }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div className="badge" style={{ margin: "0 auto 16px" }}><ChevronDown size={14} /> Dúvidas frequentes</div>
-          <h2 style={{ fontSize: "clamp(24px,3vw,36px)", fontWeight: 800 }}>Tem alguma dúvida?</h2>
+      <section id="faq" className="bg-white py-20 px-4 sm:px-6 border-t border-gray-200/60">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center mb-12">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/60">
+              Tire suas dúvidas
+            </span>
+            <h2 className="mt-3 text-3xl font-extrabold text-gray-900">Perguntas Frequentes</h2>
+          </div>
+
+          <div className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-[#FAFAF8] px-6">
+            {FAQS.map(({ q, a }, i) => {
+              const isOpen = activeFaq === i
+              return (
+                <div key={q} className="py-5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFaq(isOpen ? null : i)}
+                    className="flex w-full items-center justify-between gap-4 text-left text-base font-bold text-gray-900 hover:text-teal-700 transition-colors"
+                  >
+                    <span>{q}</span>
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-gray-500 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-teal-700' : ''
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <p className="mt-3 text-sm text-gray-600 leading-relaxed pr-6">{a}</p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
-        <div>
-          {FAQS.map(({ q, a }, i) => (
-            <div key={i} className="faq-item">
-              <button className="faq-btn" onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
-                {q}
-                <ChevronDown size={20} color="#666" style={{ transform: activeFaq === i ? "rotate(180deg)" : "none", transition: "transform 0.3s ease", flexShrink: 0 }} />
-              </button>
-              <div className={`faq-content ${activeFaq === i ? "open" : ""}`}>
-                <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, margin: 0 }}>{a}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      </section>
 
       {/* ── CTA FINAL ── */}
-      <div style={{ background: "linear-gradient(135deg,#052E2B,#0F766E)", padding: "80px 24px", textAlign: "center" }}>
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <ChefHat size={48} color="rgba(255,255,255,0.3)" style={{ margin: "0 auto 24px" }} />
-          <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#fff", marginBottom: 16 }}>
-            Comece hoje mesmo
+      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-emerald-900 py-20 px-4 sm:px-6 text-center text-white">
+        <div className="mx-auto max-w-2xl">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-emerald-300">
+            <ChefHat className="h-8 w-8" />
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
+            Pronta para profissionalizar o seu atelier de doces?
           </h2>
-          <p style={{ fontSize: 18, color: "rgba(255,255,255,0.75)", marginBottom: 36, lineHeight: 1.6 }}>
-            O seu atelier merece uma gestão profissional.<br />
-            Junte-se às confeiteiras que já transformaram o negócio.
+          <p className="mt-4 text-base sm:text-lg text-teal-100 leading-relaxed">
+            Crie a sua conta em menos de 30 segundos, receba ingredientes e receita modelo já
+            cadastrados e experimente tudo grátis por 15 dias.
           </p>
-          <Link href="/login?mode=signup" className="btn-primary" style={{ background: "#fff", color: "#0F766E", fontSize: 18, padding: "18px 40px", borderRadius: 14, textDecoration: "none" }}>
-            Assinar agora <ArrowRight size={20} />
-          </Link>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 16 }}>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/login?mode=signup"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-extrabold text-teal-900 shadow-xl hover:bg-emerald-50 transition-all hover:-translate-y-0.5"
+            >
+              <span>Criar minha conta grátis</span>
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+          <p className="mt-4 text-xs text-teal-200/80">
             A partir de {p.currency} {p.monthly}/mês · Sem compromisso
           </p>
         </div>
-      </div>
+      </section>
 
       {/* ── FOOTER ── */}
-      <div style={{ background: "#111", padding: "40px 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#0F766E", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ChefHat size={16} color="#fff" />
+      <footer className="bg-gray-950 py-10 px-4 sm:px-6 text-gray-400 border-t border-white/10">
+        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700 text-white">
+              <ChefHat className="h-4 w-4" />
             </div>
-            <span style={{ fontWeight: 700, color: "#fff", fontSize: 16 }}>Doce Finance</span>
+            <span className="font-bold text-white text-base">Doce Finance</span>
           </div>
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
-            <Link href="/login" style={{ color: "#888", fontSize: 14, textDecoration: "none" }}>Entrar</Link>
-            <Link href="/termos" style={{ color: "#888", fontSize: 14, textDecoration: "none" }}>Termos</Link>
-            <Link href="/privacidade" style={{ color: "#888", fontSize: 14, textDecoration: "none" }}>Privacidade</Link>
-            <a href="mailto:suporte@docefinance.app" style={{ color: "#888", fontSize: 14, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-              <Mail size={14} /> Suporte
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener" style={{ color: "#888", fontSize: 14, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg> Instagram
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+            <Link href="/login" className="hover:text-white transition-colors">
+              Entrar
+            </Link>
+            <Link href="/login?mode=signup" className="hover:text-white transition-colors">
+              Criar Conta
+            </Link>
+            <Link href="/termos" className="hover:text-white transition-colors">
+              Termos de Uso
+            </Link>
+            <Link href="/privacidade" className="hover:text-white transition-colors">
+              Privacidade
+            </Link>
+            <a
+              href="mailto:suporte@docefinance.app"
+              className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+            >
+              <Mail className="h-4 w-4" />
+              <span>Suporte</span>
             </a>
           </div>
-          <p style={{ color: "#555", fontSize: 13 }}>© {new Date().getFullYear()} Doce Finance. Todos os direitos reservados.</p>
+
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} Doce Finance. Todos os direitos reservados.
+          </p>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }
