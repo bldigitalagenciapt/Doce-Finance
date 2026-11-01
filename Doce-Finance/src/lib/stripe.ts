@@ -15,6 +15,9 @@ let stripeSingleton: Stripe | null = null
 
 /** Instância lazy: não quebra o build quando a variável não existe. */
 export function getStripe(): Stripe {
+  if (typeof window !== 'undefined') {
+    throw new Error('getStripe() é exclusivo para execução no servidor.')
+  }
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) throw new Error('STRIPE_SECRET_KEY não configurada.')
   if (!stripeSingleton) {

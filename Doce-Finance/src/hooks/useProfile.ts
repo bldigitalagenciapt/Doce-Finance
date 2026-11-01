@@ -15,6 +15,20 @@ export function useProfile() {
   useEffect(() => {
     let active = true
     async function load() {
+      try {
+        const res = await fetch('/api/profile')
+        if (res.ok) {
+          const json = await res.json()
+          if (active && json.profile) {
+            setProfile(json.profile as Profile)
+            setLoading(false)
+            return
+          }
+        }
+      } catch {
+        // Fallback para consulta direta caso offline
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser()

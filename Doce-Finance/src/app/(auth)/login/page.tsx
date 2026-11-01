@@ -33,24 +33,38 @@ export default function LoginPage() {
     setLoading(true)
     try {
       if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: form.email,
-          password: form.password,
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+          }),
         })
-        if (error) throw error
+        const json = await res.json()
+        if (!res.ok) {
+          throw new Error(json.error || 'E-mail ou senha incorretos.')
+        }
         toast.success('Bem-vinda de volta!')
         router.push('/dashboard')
         router.refresh()
       } else {
-        const { data: signUpData, error } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.password,
-          options: { data: { full_name: form.fullName } },
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName: form.fullName,
+            email: form.email,
+            password: form.password,
+          }),
         })
-        if (error) throw error
+        const json = await res.json()
+        if (!res.ok) {
+          throw new Error(json.error || 'Não foi possível criar a conta.')
+        }
         // Popula ingredientes e receita modelo em background (fire-and-forget)
         fetch('/api/onboarding/seed', { method: 'POST' }).catch(() => {})
-        if (signUpData?.session) {
+        if (json.hasSession) {
           toast.success('Conta criada com sucesso! Bem-vinda!')
           router.push('/dashboard')
           router.refresh()

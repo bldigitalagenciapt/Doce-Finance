@@ -7,6 +7,10 @@ import { createClient } from '@supabase/supabase-js'
  * onde o acesso público é intencional (ex.: orçamento compartilhável).
  */
 export function createAdminClient() {
+  if (typeof window !== 'undefined') {
+    throw new Error('createAdminClient() é exclusivo para execução no servidor.')
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 

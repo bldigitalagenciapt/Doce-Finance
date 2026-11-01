@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
-// Prefixos que exigem autenticacao
+// Prefixos de páginas que exigem autenticação
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/pedidos",
@@ -15,8 +15,16 @@ const PROTECTED_PREFIXES = [
   "/paywall",
 ]
 
-// Rotas sempre publicas
-const ALWAYS_PUBLIC = ["/api/orcamento", "/api/checkout", "/orcamento", "/sucesso", "/login", "/auth"]
+// Rotas de API que são legitimamente públicas (todas as outras /api/* exigem usuário autenticado)
+const PUBLIC_API_PREFIXES = [
+  "/api/orcamento",
+  "/api/webhook/stripe",
+  "/api/auth/login",
+  "/api/auth/signup",
+]
+
+// Rotas de páginas sempre públicas
+const ALWAYS_PUBLIC = ["/orcamento", "/sucesso", "/login", "/auth", ...PUBLIC_API_PREFIXES]
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -35,7 +43,11 @@ export async function updateSession(request: NextRequest) {
           )
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              sameSite: options?.sameSite ?? "lax",
+              secure: process.env.NODE_ENV === "production" ? true : options?.secure,
+            }),
           )
         },
       },
@@ -47,6 +59,17 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
+
+  const isPublicApi = PUBLIC_API_PREFIXES.some((p) => path.startsWith(p))
+  const isProtectedApi = path.startsWith("/api/") && !isPublicApi
+
+  // Bloqueia imediatamente qualquer rota /api/* privada sem sessão autenticada válida
+  if (!user && isProtectedApi) {
+    return NextResponse.json(
+      { error: "Não autenticado. Faça login para acessar este recurso." },
+      { status: 401 },
+    )
+  }
 
   const isAlwaysPublic = ALWAYS_PUBLIC.some((p) => path.startsWith(p))
   const isProtected = !isAlwaysPublic && PROTECTED_PREFIXES.some((p) => path.startsWith(p))

@@ -102,8 +102,8 @@ export async function POST() {
     }
 
     return NextResponse.json({ ok: true, skipped: false })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[seed] Erro:', err)
-    return NextResponse.json({ error: err.message || 'Erro interno.' }, { status: 500 })
+    return NextResponse.json({ error: 'Erro interno ao inicializar dados.' }, { status: 500 })
   }
 }

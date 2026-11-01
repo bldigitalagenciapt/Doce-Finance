@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Download } from 'lucide-react'
 import QRCode from 'qrcode'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decryptProfileFields } from '@/lib/crypto'
 import { buildPixPayload, pixKeyTypeLabel } from '@/lib/pix'
 import { ORDER_STATUS } from '@/lib/orderStatus'
 import {
@@ -62,7 +63,7 @@ async function getOrcamento(token: string | undefined): Promise<OrcamentoData | 
   return {
     order: order as Order,
     client: (client as Client) || null,
-    profile: profile as Profile,
+    profile: decryptProfileFields(profile as Profile),
     items: (items as OrderItem[]) || [],
   }
 }

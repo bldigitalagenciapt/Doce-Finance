@@ -95,6 +95,23 @@ export default function ConfiguracoesPage() {
 
   useEffect(() => {
     async function load() {
+      try {
+        const res = await fetch('/api/profile')
+        if (res.ok) {
+          const json = await res.json()
+          if (json.email) setUserEmail(json.email)
+          if (json.profile) {
+            const p = json.profile as Profile
+            setProfile(p)
+            applyProfile(p)
+          }
+          setLoading(false)
+          return
+        }
+      } catch {
+        // Fallback para cliente Supabase
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -126,126 +143,127 @@ export default function ConfiguracoesPage() {
     return user
   }
 
+  async function saveProfileEncrypted(payload: Record<string, unknown>, successMsg: string) {
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok || !json.profile) {
+      toast.error(json.error || 'Erro ao salvar alterações.')
+      return false
+    }
+    setProfile(json.profile as Profile)
+    toast.success(successMsg)
+    return true
+  }
 
   const handleSaveProfile = async () => {
-    const user = await getUser(); if (!user) return
     setSavingProfile(true)
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
+    await saveProfileEncrypted(
+      {
         business_name: form.business_name || null,
         full_name: form.full_name || null,
         brand_color: form.brand_color || null,
         logo_url: form.logo_url || null,
-      })
-      .eq('id', user.id)
-      .select('*')
-      .single()
+      },
+      'Perfil atualizado!',
+    )
     setSavingProfile(false)
-    if (error) return toast.error('Erro ao salvar perfil.')
-    if (data) setProfile(data as Profile)
-    toast.success('Perfil atualizado!')
   }
 
   const handleSaveContact = async () => {
-    const user = await getUser(); if (!user) return
     setSavingContact(true)
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
+    await saveProfileEncrypted(
+      {
         phone: contact.phone || null,
         email_contact: contact.email_contact || null,
         address: contact.address || null,
         business_hours: contact.business_hours || null,
-      })
-      .eq('id', user.id)
-      .select('*')
-      .single()
+      },
+      'Informações de contato salvas com criptografia!',
+    )
     setSavingContact(false)
-    if (error) return toast.error('Erro ao salvar contato.')
-    if (data) setProfile(data as Profile)
-    toast.success('Informações de contato salvas!')
   }
 
   const handleSavePrefs = async () => {
-    const user = await getUser(); if (!user) return
     const margin = Math.min(99, Math.max(0, prefs.default_margin_percent))
     const days = Math.max(1, prefs.quote_validity_days)
     setSavingPrefs(true)
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
+    await saveProfileEncrypted(
+      {
         default_margin_percent: margin,
         quote_validity_days: days,
-      })
-      .eq('id', user.id)
-      .select('*')
-      .single()
+      },
+      'Preferências salvas!',
+    )
     setSavingPrefs(false)
-    if (error) return toast.error('Erro ao salvar preferências.')
-    if (data) setProfile(data as Profile)
-    toast.success('Preferências salvas!')
   }
 
   const handleSavePayment = async () => {
-    const user = await getUser(); if (!user) return
     setSavingPayment(true)
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
+    await saveProfileEncrypted(
+      {
         pix_key: payment.pix_key || null,
         pix_key_type: payment.pix_key_type || null,
         mbway_phone: payment.mbway_phone || null,
         payment_instructions: payment.payment_instructions || null,
-      })
-      .eq('id', user.id)
-      .select('*')
-      .single()
+      },
+      'Formas de pagamento salvas com criptografia!',
+    )
     setSavingPayment(false)
-    if (error) return toast.error('Erro ao salvar formas de pagamento.')
-    if (data) setProfile(data as Profile)
-    toast.success('Formas de pagamento salvas!')
   }
 
   const handleChangeCurrency = async (c: Currency) => {
     if (c === currency) return
     setSavingCurrency(true)
     setCurrency(c)
-    const user = await getUser()
-    if (!user) { setSavingCurrency(false); return }
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({ currency: c })
-      .eq('id', user.id)
-      .select('*')
-      .single()
+    const ok = await saveProfileEncrypted(
+      { currency: c },
+      `Moeda alterada para ${c === 'BRL' ? 'Real (R$)' : 'Euro (€)'}!`,
+    )
+    if (!ok) setCurrency(currency)
     setSavingCurrency(false)
-    if (error) { toast.error('Erro ao alterar moeda.'); return }
-    if (data) setProfile(data as Profile)
-    toast.success(`Moeda alterada para ${c === 'BRL' ? 'Real (R$)' : 'Euro (€)'}!`)
   }
 
   const handleChangePassword = async () => {
-    if (password.next.length < 6) return toast.error('A senha deve ter ao menos 6 caracteres.')
+    if (password.next.length < 8) return toast.error('A senha deve ter ao menos 8 caracteres (letras e números).')
     if (password.next !== password.confirm) return toast.error('As senhas não coincidem.')
     setSavingPassword(true)
-    const { error } = await supabase.auth.updateUser({ password: password.next })
-    setSavingPassword(false)
-    if (error) return toast.error(error.message || 'Erro ao alterar senha.')
-    setPassword({ next: '', confirm: '' })
-    toast.success('Senha alterada com sucesso!')
+    try {
+      const res = await fetch('/api/auth/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password.next }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        toast.error(json.error || 'Erro ao alterar senha.')
+        return
+      }
+      setPassword({ next: '', confirm: '' })
+      toast.success('Senha alterada com sucesso!')
+    } catch {
+      toast.error('Erro de conexão ao alterar senha.')
+    } finally {
+      setSavingPassword(false)
+    }
   }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!e.target.files || e.target.files.length === 0) return
+      const user = await getUser()
+      if (!user) return
       const file = e.target.files[0]
-      const fileExt = file.name.split('.').pop()
-      const filePath = `${profile?.id}-${Math.random()}.${fileExt}`
+      const fileExt = (file.name.split('.').pop() || 'png').toLowerCase()
+      // Segue a política de RLS do Storage: pasta com o UID do usuário (<uid>/arquivo)
+      const filePath = `${user.id}/logo-${Date.now()}.${fileExt}`
       setSavingProfile(true)
       const { error: uploadError } = await supabase.storage
         .from('atelier-images')
-        .upload(filePath, file)
+        .upload(filePath, file, { upsert: true })
       if (uploadError) throw uploadError
       const { data: urlData } = supabase.storage.from('atelier-images').getPublicUrl(filePath)
       setForm((prev) => ({ ...prev, logo_url: urlData.publicUrl }))
