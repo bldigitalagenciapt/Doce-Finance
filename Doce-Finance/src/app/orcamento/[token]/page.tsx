@@ -18,7 +18,8 @@ import { QuoteActions } from '@/components/orcamento/QuoteActions'
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  params: { token: string }
+  // Next.js 15+/16: params é assíncrono e precisa ser aguardado
+  params: Promise<{ token: string }>
 }
 
 /** UUID v4 simples para validar o token antes de consultar o banco. */
@@ -33,8 +34,8 @@ interface OrcamentoData {
   items: OrderItem[]
 }
 
-async function getOrcamento(token: string): Promise<OrcamentoData | null> {
-  if (!isUuid(token)) return null
+async function getOrcamento(token: string | undefined): Promise<OrcamentoData | null> {
+  if (!token || !isUuid(token)) return null
   const supabase = createAdminClient()
 
   const { data: order, error } = await supabase
@@ -79,7 +80,8 @@ function formatDate(value: string | null): string {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const data = await getOrcamento(params.token)
+  const { token } = await params
+  const data = await getOrcamento(token)
   if (!data) {
     return { title: 'Orçamento não encontrado' }
   }
@@ -105,7 +107,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function OrcamentoPage({ params }: PageProps) {
-  const data = await getOrcamento(params.token)
+  const { token } = await params
+  const data = await getOrcamento(token)
   if (!data) notFound()
 
   const { order, client, profile, items } = data
