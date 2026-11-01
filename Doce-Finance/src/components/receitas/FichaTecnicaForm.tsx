@@ -149,8 +149,8 @@ function RecipeBlock({
                     {format(ing?.cost_per_unit || 0)}/{ing?.unit}
                   </p>
                 </div>
-                <div className="w-28 flex items-center gap-1.5">
-                  <div className="relative flex-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="relative w-28 sm:w-32">
                     <input
                       type="number"
                       min="0"
@@ -158,13 +158,13 @@ function RecipeBlock({
                       placeholder="Qtd"
                       value={r.quantity}
                       onChange={(e) => onQuantityChange(block.id, r.ingredient_id, e.target.value)}
-                      className={`h-9 w-full rounded-lg border pl-3 pr-8 text-sm focus:outline-none focus:ring-1 ${
+                      className={`h-9 w-full rounded-lg border pl-3 pr-9 text-sm font-medium text-gray-900 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus:outline-none focus:ring-1 ${
                         hasEmptyQty
                           ? 'border-orange-300 focus:border-orange-400 focus:ring-orange-400'
                           : 'border-gray-300 focus:border-brand-500 focus:ring-brand-500'
                       }`}
                     />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                    <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">
                       {ing?.unit}
                     </span>
                   </div>
@@ -173,7 +173,7 @@ function RecipeBlock({
                       type="button"
                       onClick={() => onOpenConverter(block.id, r.ingredient_id, ing?.name)}
                       title="Converter medida caseira (xícara, colher ➔ gramas)"
-                      className="rounded-lg p-1.5 text-brand-700 hover:bg-brand-50 transition-colors"
+                      className="shrink-0 rounded-lg p-1.5 text-brand-700 hover:bg-brand-50 transition-colors"
                     >
                       <Scale className="h-4 w-4" />
                     </button>
